@@ -341,7 +341,7 @@ function cleanParcelRows(rows){
 function isDateCol(h){ return /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(String(h||"").trim()); }
 function rosterDateCols(rows){
   if (!rows.length) return [];
-  return Object.keys(rows[0]).filter(isDateCol);
+  return Object.keys(rows[0]).filter(k => /^\d{1,2}\/\d{1,2}(\/\d{2,4})?$/.test(String(k||"").trim()));
 }
 function rosterNameCol(rows){
   if (!rows.length) return null;
@@ -351,19 +351,39 @@ function rosterNameCol(rows){
 function defaultRosterDate(dateCols){
   if (!dateCols.length) return "";
   const d = new Date();
-  const us = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
-  const vn = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
-  if (dateCols.includes(us)) return us;
-  if (dateCols.includes(vn)) return vn;
-  return dateCols[dateCols.length-1];
+  const day = d.getDate();
+  const month = d.getMonth() + 1;
+  const year = d.getFullYear();
+  
+  // Tìm chính xác cột có dạng d/m/yyyy hoặc m/d/yyyy trùng với hôm nay
+  const match = dateCols.find(c => {
+    const parts = c.split('/').map(Number);
+    return (parts[0] === day && parts[1] === month && parts[2] === year) ||
+           (parts[0] === month && parts[1] === day && parts[2] === year);
+  });
+  return match || dateCols[dateCols.length - 1];
+}
+
+// 2. Sửa logic khớp Mã Driver (Tránh bị 0 đi làm / 0 nghỉ)
+function fixRiderMatching(rRows2, aRows2) {
+  const ak = aRows2.length ? Object.keys(aRows2[0]) : [];
+  const aMa = ak.find(k => normStr(k).includes("ma") && (normStr(k).includes("tai") || normStr(k).includes("don") || normStr(k).includes("xe")));
+  
+  const assignCnt = {};
+  for (const r of aRows2) {
+    const id = String(r[aMa] ?? "").trim().toUpperCase();
+    if (id && id !== "0" && id !== "UNDEFINED") {
+      assignCnt[id] = (assignCnt[id] || 0) + 1;
+    }
+  }
+  return assignCnt;
 }
 function rosterStatus(v){
   const s = String(v ?? "").trim().toUpperCase();
-  if (!s) return "unknown";
-  if (s.includes(":")) return "on";
-  if (/^(OFF|PH|AL|SL)$/.test(s)) return "off";
-  if (s.includes("/")) return "off";
-  return "unknown";
+  if (!s || s === "0") return "off";
+  if (s.includes(":") || /^(CA|FULL|OFFICE|SHIFT|\d)/.test(s)) return "on";
+  if (/^(OFF|PH|AL|SL|REST|NGLI)$/.test(s) || s.includes("/")) return "off";
+  return "on";
 }
 function computeRoster(rows, dateCol){
   const nameCol = rosterNameCol(rows);
@@ -382,11 +402,12 @@ function renderOverview(now){
   if (DATA.backlog){ const [a,b]=countKV(DATA.backlog); set("kBacklog3",a); set("kBacklog4",b); set("tBacklog",a+b); document.getElementById("uBacklog3").textContent="Cập nhật: "+now; document.getElementById("uBacklog4").textContent="Cập nhật: "+now; }
   if (DATA.assign){ const [a,b]=countKV(DATA.assign); set("kAssign3",a); set("kAssign4",b); set("tAssign",a+b); document.getElementById("uAssign").textContent="Cập nhật: "+now; }
   if (DATA.hangve){ const [a,b]=countKV(DATA.hangve); set("kHangve3",a); set("kHangve4",b); set("tHangve",a+b); }
-  if (DATA.rider || DATA.fte){
-    const fteRows = DATA.fte || [], riderRows = DATA.rider || [];
-    const fCols = rosterDateCols(fteRows), rCols = rosterDateCols(riderRows);
-    const allCols = [...new Set([...fCols, ...rCols])];
-    if (!rosterDate || !allCols.includes(rosterDate)) rosterDate = defaultRosterDate(allCols);
+
+  // FIX LỊCH FTE
+  if (DATA.fte){
+    const fteRows = DATA.fte || [];
+    const fCols = rosterDateCols(fteRows);
+    if (!rosterDate || !fCols.includes(rosterDate)) rosterDate = defaultRosterDate(fCols);
     const f = fCols.includes(rosterDate) ? computeRoster(fteRows, rosterDate) : { on:[], off:[] };
     
     const setF = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=(v??0).toLocaleString("vi-VN"); };
@@ -401,44 +422,40 @@ function renderOverview(now){
     const uO=document.getElementById("uFteOff"); if(uO) uO.textContent = f.off.length ? (f.off.length+" người OFF/PH/AL/SL") : "Không ai nghỉ";
     const fl=document.getElementById("fteShiftList");
     if(fl){
-      if(!fteRows.length) fl.textContent="Tab FTE đang trống — nhập lịch vào tab FTE trong Sheet rồi bấm Tải tất cả.";
-      else if(!rosterDate) fl.textContent="Không tìm thấy cột ngày (dạng M/d/yyyy) trong tab FTE. Hàng 1 phải là ngày như 9/8/2026.";
+      if(!fteRows.length) fl.textContent="Tab FTE đang trống.";
+      else if(!rosterDate) fl.textContent="Không tìm thấy cột ngày trong tab FTE.";
       else {
         const cnt={}; f.on.forEach(o=>{cnt[o.shift]=(cnt[o.shift]||0)+1;});
         const shiftSum=Object.entries(cnt).map(([k,v])=>`${k}: <b>${v}</b>`).join(" · ")||"–";
         fl.innerHTML=`✅ Đi làm <b>${f.on.length}</b> — ${shiftSum}<br>❌ Nghỉ <b>${f.off.length}</b>: `+(f.off.slice(0,12).map(o=>`${o.name} (${o.shift})`).join(", ")||"–")+(f.off.length>12?` … +${f.off.length-12} nữa`:"");
       }
     }
+  }
 
-    const rRaw = DATA.rider || [], aRows2 = DATA.assign || [];
-    const hIdx = rRaw.findIndex(r=>Object.values(r).some(v=>normStr(String(v)).includes("driver")));
-    const rRows2 = hIdx > 0 ? rRaw.slice(hIdx + 1) : rRaw;
-    const rk = rRows2.length ? Object.keys(rRows2[0]) : [];
-    
-    const isKVv = (v)=>/^khu vuc\s*[34]$/.test(normStr(String(v ?? "").trim()));
-    const isIdv = (v)=>/^\d{4,8}$/.test(String(v ?? "").trim());
-    const colByContent = (test)=>{
-      let best = null, bestN = 0;
-      for (const k of rk){
-        let n = 0;
-        for (const r of rRows2.slice(0, 400)){ if (test(r[k])) n++; }
-        if (n > bestN){ bestN = n; best = k; }
-      }
-      return bestN >= 3 ? best : null;
-    };
-    
-    const rKv = colByContent(isKVv) || rk[1];
-    const rCot = rk.find(k=>normStr(k) === "cot" || normStr(k).includes("cot")) || rk[2];
-    const rId = colByContent(isIdv) || rk[3];
-    const rNm = rk.find(k=>normStr(k).includes("driver")&&normStr(k).includes("name"))
-      || colByContent(v=>String(v ?? "").trim().split(/\s+/).length >= 2 && !isKVv(v) && !isIdv(v)) || rk[4];
-      
-    const ak = aRows2.length ? Object.keys(aRows2[0]) : [];
-    const aMa = ak.find(k=>normStr(k).includes("ma")&&normStr(k).includes("tai"));
+  // FIX DRIVER ĐANG HOẠT ĐỘNG
+  if (DATA.rider){
+    const rRows = DATA.rider || [];
+    const aRows = DATA.assign || [];
+    if (!rRows.length) return;
+
+    const rk = Object.keys(rRows[0]);
+    // Chuẩn hóa quét đúng tên cột bất kể viết hoa/thường hoặc khoảng trắng
+    const rKv = rk.find(k => normStr(k).includes("khu vuc") || normStr(k).includes("kv")) || rk[1];
+    const rCot = rk.find(k => normStr(k) === "cot" || normStr(k).includes("cot")) || rk[2];
+    const rId = rk.find(k => normStr(k).includes("ma") && (normStr(k).includes("tai") || normStr(k).includes("nv") || normStr(k).includes("id"))) || rk[3];
+    const rNm = rk.find(k => normStr(k).includes("ten") || normStr(k).includes("driver") || normStr(k).includes("ho va ten")) || rk[4];
+
+    // Gom số lượng đơn Assign theo Mã TX hoặc Tên TX
     const assignCnt = {};
-    for (const r of aRows2){
-      const id = String(aMa ? r[aMa] : "").trim();
+    const ak = aRows.length ? Object.keys(aRows[0]) : [];
+    const aMa = ak.find(k => normStr(k).includes("ma") && (normStr(k).includes("tai") || normStr(k).includes("don")));
+    const aTen = ak.find(k => normStr(k).includes("ten") && normStr(k).includes("tai"));
+
+    for (const r of aRows){
+      const id = String(aMa ? r[aMa] : "").trim().toUpperCase();
+      const name = String(aTen ? r[aTen] : "").trim().toUpperCase();
       if (id && id !== "0") assignCnt[id] = (assignCnt[id] || 0) + 1;
+      if (name) assignCnt[name] = (assignCnt[name] || 0) + 1;
     }
 
     const dataGroup = {
@@ -446,19 +463,19 @@ function renderOverview(now){
       KV4: { COT1: { on: [], off: [] }, COT2: { on: [], off: [] } }
     };
 
-    for (const r of rRows2){
+    for (const r of rRows){
       const kvStr = normStr(rKv ? r[rKv] : "");
       const cotStr = normStr(rCot ? r[rCot] : "");
-      const kvKey = kvStr.includes("4") ? "KV4" : (kvStr.includes("3") ? "KV3" : null);
-      if (!kvKey) continue;
+      const kvKey = kvStr.includes("4") ? "KV4" : "KV3";
 
       const cotKey = cotStr.includes("2") ? "COT2" : "COT1";
       const name = String(rNm ? r[rNm] : "").trim();
-      const id = String(rId ? r[rId] : "").trim();
+      const id = String(rId ? r[rId] : "").trim().toUpperCase();
       if (!name && !id) continue;
 
-      const assignVal = (id && assignCnt[id]) || 0;
-      const item = { name, id, assign: assignVal };
+      // Khớp dữ liệu qua Mã TX hoặc Tên TX
+      const assignVal = (id && assignCnt[id]) || (name && assignCnt[name.toUpperCase()]) || 0;
+      const item = { name: name || id, id, assign: assignVal };
 
       if (assignVal > 0) {
         dataGroup[kvKey][cotKey].on.push(item);
@@ -470,39 +487,31 @@ function renderOverview(now){
     const formatRiderSummary = (group) => {
       const c1On = group.COT1.on.length, c1Off = group.COT1.off.length;
       const c2On = group.COT2.on.length, c2Off = group.COT2.off.length;
-      const totalOn = c1On + c2On;
-      const totalOff = c1Off + c2Off;
+      const drvNames = (arr) => arr.slice(0, 15).map(m => `${m.name}${m.assign ? ` (${m.assign})` : ""}`).join(", ") + (arr.length > 15 ? ` … +${arr.length - 15} nữa` : "");
 
-      const drvNames = (arr) => arr.slice(0, 15).map(m=>`${m.name}${m.assign ? ` (${m.assign})` : ""}`).join(", ") + (arr.length > 15 ? ` … +${arr.length - 15} nữa` : "");
-
-      const html = `
-        <div style="margin-bottom:4px; font-weight:700; color:#0f172a;">🔥 COT 1: <span style="color:#16a34a">${c1On} đi làm</span> / <span style="color:#dc2626">${c1Off} nghỉ</span></div>
-        <div style="font-size:10.5px; margin-bottom:6px;">
-          ✅ Đi làm: ${drvNames(group.COT1.on) || "–"}<br>
-          ❌ Nghỉ: ${drvNames(group.COT1.off) || "–"}
-        </div>
-        <div style="margin-bottom:4px; font-weight:700; color:#0f172a; border-top:1px dashed #cbd5e1; padding-top:4px;">⚡ COT 2: <span style="color:#16a34a">${c2On} đi làm</span> / <span style="color:#dc2626">${c2Off} nghỉ</span></div>
-        <div style="font-size:10.5px;">
-          ✅ Đi làm: ${drvNames(group.COT2.on) || "–"}<br>
-          ❌ Nghỉ: ${drvNames(group.COT2.off) || "–"}
-        </div>
-      `;
-      return { totalOn, totalOff, html, c1On, c1Off, c2On, c2Off };
+      return {
+        totalOn: c1On + c2On,
+        totalOff: c1Off + c2Off,
+        c1On, c1Off, c2On, c2Off,
+        html: `
+          <div style="margin-bottom:4px; font-weight:700; color:#0f172a;">🔥 COT 1: <span style="color:#16a34a">${c1On} đi làm</span> / <span style="color:#dc2626">${c1Off} nghỉ</span></div>
+          <div style="font-size:10.5px; margin-bottom:6px;">✅ Đi làm: ${drvNames(group.COT1.on) || "–"}<br>❌ Nghỉ: ${drvNames(group.COT1.off) || "–"}</div>
+          <div style="margin-bottom:4px; font-weight:700; color:#0f172a; border-top:1px dashed #cbd5e1; padding-top:4px;">⚡ COT 2: <span style="color:#16a34a">${c2On} đi làm</span> / <span style="color:#dc2626">${c2Off} nghỉ</span></div>
+          <div style="font-size:10.5px;">✅ Đi làm: ${drvNames(group.COT2.on) || "–"}<br>❌ Nghỉ: ${drvNames(group.COT2.off) || "–"}</div>
+        `
+      };
     };
 
     const res3 = formatRiderSummary(dataGroup.KV3);
     const res4 = formatRiderSummary(dataGroup.KV4);
 
-    document.getElementById("tRider").textContent = `KV3: ${res3.totalOn} đi làm (${res3.c1On} COT1, ${res3.c2On} COT2) / ${res3.totalOff} nghỉ • KV4: ${res4.totalOn} đi làm (${res4.c1On} COT1, ${res4.c2On} COT2) / ${res4.totalOff} nghỉ`;
-    
-    setF("drvWork3", res3.totalOn); 
-    setF("drvWork4", res4.totalOn);
-    
+    document.getElementById("tRider").textContent = `KV3: ${res3.totalOn} đi làm / ${res3.totalOff} nghỉ • KV4: ${res4.totalOn} đi làm / ${res4.totalOff} nghỉ`;
+    document.getElementById("drvWork3").textContent = res3.totalOn; 
+    document.getElementById("drvWork4").textContent = res4.totalOn;
     document.getElementById("tagR3").textContent = `${res3.totalOn} đi làm • ${res3.totalOff} nghỉ`;
     document.getElementById("tagR4").textContent = `${res4.totalOn} đi làm • ${res4.totalOff} nghỉ`;
-    
-    document.getElementById("riderList3").innerHTML = !rRows2.length ? "Tab Rider đang trống." : res3.html;
-    document.getElementById("riderList4").innerHTML = !rRows2.length ? "Tab Rider đang trống." : res4.html;
+    document.getElementById("riderList3").innerHTML = res3.html;
+    document.getElementById("riderList4").innerHTML = res4.html;
   }
 }
 
