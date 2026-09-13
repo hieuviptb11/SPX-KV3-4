@@ -246,7 +246,8 @@ function loadCfg(){
     if (c && c.id){
       c.tabs = { ...DEFAULT_TABS, ...(c.tabs || {}) };
       if (c.tabs.fte === "Lịch FTE") c.tabs.fte = "FTE";
-      if (c.tabs.rider === "Lịch Rider") c.tabs.rider = "Rider";
+      // Ép chuyển tab rider từ "Rider" thành "Lịch Rider" nếu đang lưu bản cũ
+      if (c.tabs.rider === "Rider" || !c.tabs.rider) c.tabs.rider = "Lịch Rider";
       return c;
     }
   } catch(e){}
@@ -909,7 +910,7 @@ function resetCfg(){
   CFG = { id: DEFAULT_ID, tabs: {...DEFAULT_TABS} };
   localStorage.setItem("spx_hub_cfg", JSON.stringify(CFG));
   buildCfg();
-  document.getElementById("cfgMsg").textContent = "Đã reset. Bấm Tải tất cả.";
+  document.getElementById("cfgMsg").textContent = "Đã reset về mặc định (Lịch Rider). Bấm Tải tất cả.";
 }
 function setupTimer(){
   if (timer) clearInterval(timer);
