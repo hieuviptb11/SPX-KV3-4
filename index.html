@@ -44,7 +44,6 @@
   .kcard .big { font-size:26px; font-weight:800; margin:4px 0; }
   .kcard .upd { font-size:11px; color:var(--muted); }
   
-  /* Style riêng cho Thẻ Hàng Đang Về */
   .hv-detail-box { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; font-size: 13px; font-weight: 600; }
   .hv-detail-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding-bottom: 3px; }
   .hv-detail-row span.val { font-size: 16px; font-weight: 800; color: var(--primary); }
@@ -62,7 +61,7 @@
   table.pivot { font-size:11px; table-layout:fixed; width:100%; border-collapse:collapse; }
   table.pivot th { font-size:11px; padding:5px 6px; background:#0f172a; color:#fff; position:sticky; top:0; z-index:10; }
   table.pivot td { padding:5px 6px; }
-  /* Bảng Hàng Đang Về: tách riêng để không bị table-layout:fixed làm lệch cột */
+
   table.hv-table { table-layout:fixed !important; width:100%; border-collapse:collapse; font-size:13px; }
   table.hv-table col.c-quan { width: 46%; }
   table.hv-table col.c-num  { width: 18%; }
@@ -73,13 +72,21 @@
   table.hv-table tr.sub-row td { background:#fef9c3; font-weight:700; font-style:italic; }
   table.hv-table tr.grand-row td { background:#fdba74; font-weight:800; border-top:2px solid #ea580c; font-size:14px; }
   table.hv-table tr.total-row td:first-child { padding-left:22px; color:#334155; }
-  /* Card biểu đồ: bung rộng + canh giữa */
+  
+  /* CSS BẢNG PICKUP KHÔNG BỊ PHÁ BỐ CỤC */
+  table.pk-table { width:100%; border-collapse:collapse; table-layout:fixed; font-size:10.5px; }
+  table.pk-table th { background:#0f172a; color:#fff; padding:4px; font-weight:700; position:sticky; top:0; z-index:10; border:1px solid #334155; }
+  table.pk-table td { padding:3px 4px; border:1px solid #e2e8f0; vertical-align:middle; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  table.pk-table tr:hover td { background:#f8fafc; }
+  table.pk-table td.num, table.pk-table th.num { text-align:right; font-variant-numeric:tabular-nums; font-weight:700; color:var(--primary-dark); }
+  table.pk-table td.blank-col, table.pk-table th.blank-col { width:8px; background:#e2e8f0; border:none; }
+
   .hv-chart-card { max-width: 1180px; margin: 0 auto; padding: 18px 22px 14px; }
   .hv-chart-title { font-weight:800; font-size:15px; margin-bottom:6px; letter-spacing:.3px; }
   .hv-chart-svg-wrap { display:flex; justify-content:center; overflow-x:auto; padding:8px 4px 4px; }
   .hv-chart-svg-wrap svg { width:100%; height:auto; max-width:1140px; }
   .hv-chart-legend { display:flex; gap:20px; font-size:13px; padding:6px 8px 0; color:#475569; justify-content:center; }
-  /* Thanh phân trang */
+  
   .pg-bar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:8px 0; font-size:12px; color:#475569; }
   .pg-bar button { padding:5px 10px; border:1px solid #cbd5e1; background:#fff; border-radius:7px; cursor:pointer; font-size:12px; }
   .pg-bar button:hover:not(:disabled) { background:var(--primary-light); border-color:var(--primary); color:var(--primary-dark); }
@@ -91,84 +98,24 @@
   table.pivot tr.sub { background:#fef9c3; font-style:italic; }
   table.pivot tr.grand { background:#fdba74; font-weight:800; }
 
-  #assignPanes {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 12px;
-    width: 100%;
-  }
-
-  .as-card {
-    background: #fff;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .as-table-wrap {
-    overflow-x: auto;
-    overflow-y: auto;
-    max-height: 420px;
-    width: 100%;
-  }
-
-  #assignPanes table.pivot {
-    width: 100%;
-    min-width: 320px;
-    table-layout: fixed;
-  }
-
+  #assignPanes { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; width: 100%; }
+  .as-card { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
+  .as-table-wrap { overflow-x: auto; overflow-y: auto; max-height: 420px; width: 100%; }
+  #assignPanes table.pivot { width: 100%; min-width: 320px; table-layout: fixed; }
   #assignPanes table.pivot th:nth-child(1), #assignPanes table.pivot td:nth-child(1) { width: 25%; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #assignPanes table.pivot th:nth-child(2), #assignPanes table.pivot td:nth-child(2) { width: 40%; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #assignPanes table.pivot th:nth-child(3), #assignPanes table.pivot td:nth-child(3) { width: 20%; text-align: right; white-space: nowrap; }
   #assignPanes table.pivot th:nth-child(4), #assignPanes table.pivot td:nth-child(4) { width: 15%; text-align: right; white-space: nowrap; font-weight: bold; }
 
-  .table-container {
-    overflow: auto;
-    max-height: 520px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-  }
-
+  .table-container { overflow: auto; max-height: 520px; border: 1px solid #e2e8f0; border-radius: 8px; }
   #detailTbl { font-size: 10.5px; border-collapse: separate; border-spacing: 0; width: 100%; }
-  
-  #detailTbl thead tr:nth-child(1) th {
-    position: sticky;
-    top: 0;
-    background: #0f172a;
-    color: #ffffff;
-    z-index: 12;
-    padding: 6px 8px;
-    line-height: 1.35;
-    font-size: 10.5px;
-    border-bottom: 1px solid #334155;
-  }
-
-  #detailTbl thead tr:nth-child(2) th {
-    position: sticky;
-    top: 26px;
-    background: #1e293b;
-    color: #cbd5e1;
-    z-index: 11;
-    padding: 4px 8px;
-    line-height: 1.25;
-    font-size: 10px;
-    font-weight: normal;
-  }
-
-  #detailTbl thead th.today-col {
-    background-color: #f97316 !important;
-    color: #ffffff !important;
-    font-weight: bold !important;
-  }
-
+  #detailTbl thead tr:nth-child(1) th { position: sticky; top: 0; background: #0f172a; color: #ffffff; z-index: 12; padding: 6px 8px; line-height: 1.35; font-size: 10.5px; border-bottom: 1px solid #334155; }
+  #detailTbl thead tr:nth-child(2) th { position: sticky; top: 26px; background: #1e293b; color: #cbd5e1; z-index: 11; padding: 4px 8px; line-height: 1.25; font-size: 10px; font-weight: normal; }
+  #detailTbl thead th.today-col { background-color: #f97316 !important; color: #ffffff !important; font-weight: bold !important; }
   #detailTbl td { font-size: 10.5px; padding: 5px 8px; line-height: 1.4; color: #334155; border-bottom: 1px solid #eef2f2; }
   
   .col-center { text-align: center !important; }
   .text-red { color: #dc2626 !important; font-weight: bold !important; }
-
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
   .tabs button { border:1px solid #cbd5e1; background:#fff; border-radius:8px; padding:6px 12px; cursor:pointer; transition:background .12s,border-color .12s,color .12s; }
   .tabs button:hover:not(.active) { border-color:var(--primary); color:var(--primary-dark); }
@@ -181,19 +128,11 @@
   .mnav button { border:1px solid #cbd5e1; background:#fff; border-radius:8px; padding:6px 10px; }
   .mnav button.active { background:var(--primary); border-color:var(--primary); color:#fff; }
 
-  /* CSS riêng cho bảng FTE dạng Lịch */
   .fte-bar { background: #0f172a; color: #fff; padding: 8px 12px; border-radius: 6px 6px 0 0; display: flex; align-items: center; gap: 12px; font-weight: bold; }
   .fte-bar select { padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; color: #000; font-weight: bold; }
   .fte-sec-header { background: #0f172a; color: #fff; padding: 8px 12px; font-weight: bold; display: flex; justify-content: space-between; border-top: 1px solid #334155; }
 
-  /* (Đã dọn: khối CSS .hv-container/.hv-header-wh/.hv-header-mp cũ không còn được dùng và từng
-     xung đột !important với bảng .hv-table hiện tại — gây viền đen không mong muốn.) */
-
-  /* Polish chung: focus ring cam, thanh cuộn tông cam */
-  input:focus, select:focus, button:focus-visible {
-    outline: none; border-color: var(--primary) !important;
-    box-shadow: 0 0 0 3px var(--primary-ring);
-  }
+  input:focus, select:focus, button:focus-visible { outline: none; border-color: var(--primary) !important; box-shadow: 0 0 0 3px var(--primary-ring); }
   ::-webkit-scrollbar { width:10px; height:10px; }
   ::-webkit-scrollbar-track { background:#f1f5f9; }
   ::-webkit-scrollbar-thumb { background:var(--primary-ring); border-radius:6px; }
@@ -237,7 +176,6 @@
       <div class="kcard"><div class="kv">◉ Khu vực 4 <span class="tag kv4">KV4</span></div><div class="big" id="kAssign4">–</div><div class="upd">–</div></div>
     </div>
     
-    <!-- CẤU TRÚC HÀNG ĐANG VỀ TÁCH CHI TIẾT WH & MP -->
     <div class="section-title">🚚 HÀNG ĐANG VỀ: <span id="tHangve">–</span></div>
     <div class="cards">
       <div class="kcard">
@@ -337,11 +275,7 @@ function kvOf(r){
   if (zc){ const z = normStr(r[zc]); if (z.startsWith("z3")) return "KV3"; if (z.startsWith("z4")) return "KV4"; }
   return "KV3";
 }
-// ===== HÀNG ĐANG VỀ: nguồn CHÍNH là dữ liệu sống trong tab WH/MP (mỗi dòng = 1 vận đơn, luôn cập nhật theo Python).
-// Tra Khu vực + Quận qua bảng "Zone ID" (mã Zone, cột "Khu Vực (Zone)" trong WH/MP, LUÔN có giá trị ở mọi dòng) —
-// đáng tin cậy hơn nhiều so với cột Area/Quận có sẵn trong WH/MP (hay bị bỏ trống vì công thức VLOOKUP không
-// được kéo xuống cho các dòng Python append thêm). Tab thủ công "Hàng đang về" cũ chỉ dùng làm phương án cuối
-// (khi WH/MP chưa cấu hình được) vì nó tĩnh, không tự cập nhật.
+
 function isJunkText(v){
   const n = normStr(v);
   return !n || n.includes("tong cong") || n === "tong";
@@ -380,7 +314,6 @@ function hangveCols(rows){
   return { kv, zone, quan, ma };
 }
 function rowKvLabel(r, c){
-  // Fallback cấp cuối (khi mã Zone không có trong bảng Zone ID): dùng cột Area/Khu vực, rồi tới tiền tố Z3/Z4.
   if (c.kv){
     const n = normStr(r[c.kv]);
     if (n.includes("3")) return "Khu vực 3";
@@ -406,7 +339,7 @@ function hangveGroup(rows, zoneMap){
   if (!c) return m;
   for (const r of rows){
     const maVal = String(r[c.ma] ?? "").trim();
-    if (!maVal) continue; // bỏ dòng thiếu mã vận đơn (dòng rác/dòng tổng)
+    if (!maVal) continue;
     const { kv, qn } = resolveHangveRow(r, c, zoneMap);
     if (isJunkText(qn)) continue;
     const key = kv + "|" + qn;
@@ -414,11 +347,9 @@ function hangveGroup(rows, zoneMap){
   }
   return m;
 }
-// Đọc tab "Hàng đang về" dạng mảng thô theo vị trí cột: [WH Area | Quận | Volume, ..., MP Area | Quận | Volume]
-// (không map theo tên cột vì tab có cột trùng tên "Quận"/"Volume" — map theo tên sẽ mất khối WH)
 function parseHangveTab(arrs){
   if (!arrs || !arrs.length) return [];
-  let hi = arrs.findIndex(r => r.some(c => normStr(c).includes("wh area")));
+  let hi = arrs.findIndex(r => Array.isArray(r) && r.some(c => normStr(c).includes("wh area")));
   if (hi < 0) hi = 0;
   const head = arrs[hi].map(c => normStr(c));
   const w = head.findIndex(c => c.includes("wh area"));
@@ -435,8 +366,8 @@ function parseHangveTab(arrs){
       const area = String(r[b.area] ?? "").trim();
       const qn = String(r[b.qn] ?? "").trim();
       const vol = String(r[b.vol] ?? "").trim();
-      if (area && !isJunkText(area)) curArea = area; // Area merge/carry-down: ô trống = kế thừa ô trên
-      if (isJunkText(qn) || !/\d/.test(vol)) continue; // bỏ dòng trống / dòng "Tổng cộng"
+      if (area && !isJunkText(area)) curArea = area;
+      if (isJunkText(qn) || !/\d/.test(vol)) continue;
       const kv = normStr(curArea).includes("4") ? "Khu vực 4" : (normStr(curArea).includes("3") ? "Khu vực 3" : "(Trống)");
       out.push({ kv, qn, field: b.field, vol: parseInt(vol.replace(/[^\d]/g, ""), 10) || 0 });
     }
@@ -444,7 +375,6 @@ function parseHangveTab(arrs){
   return out;
 }
 function computeHangVe(){
-  // Nguồn CHÍNH: dữ liệu sống trong WH/MP, tra qua bảng Zone ID — luôn cập nhật theo Python.
   const zoneMap = buildZoneMap();
   const whG = hangveGroup(DATA.wh || [], zoneMap);
   const mpG = hangveGroup(DATA.mp || [], zoneMap);
@@ -458,7 +388,6 @@ function computeHangVe(){
     rows.sort((a,b)=> a.kv.localeCompare(b.kv) || a.qn.localeCompare(b.qn));
     return rows;
   }
-  // Dự phòng cuối cùng: tab thủ công "Hàng đang về" (tĩnh, chỉ dùng khi chưa cấu hình được tab WH/MP)
   const flat = parseHangveTab(DATA.hangveRaw || []);
   if (flat.length){
     const m = {};
@@ -471,6 +400,8 @@ function computeHangVe(){
   }
   return [];
 }
+
+/* HÀM CHUẨN ĐỌC BẢNG CHO BACKLOG/ASSIGN/FTE/RIDER (SẠCH SẼ KHÔNG RÁC) */
 function fetchViaJsonp(id, name){
   return new Promise((resolve, reject)=>{
     const cb = "__cb" + Date.now() + Math.floor(Math.random()*999);
@@ -480,7 +411,7 @@ function fetchViaJsonp(id, name){
       cleanup();
       try{
         if (resp.status !== "ok") throw new Error("gviz error");
-        let cols = resp.table.cols.map(c => c.label || c.id);
+        let cols = resp.table.cols.map(c => c.label || c.id || "");
         let dataRows = resp.table.rows || [];
         const firstCells = (dataRows[0]?.c || []).map(cell => String(cell?.f ?? cell?.v ?? "").trim());
         const dateCount = firstCells.filter(v => /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(v)).length;
@@ -490,8 +421,16 @@ function fetchViaJsonp(id, name){
           cols = firstCells.map((v, i) => v || (i < 4 ? rosterNames[i] : cols[i]));
           dataRows = dataRows.slice(1);
         }
-        resolve(dataRows.map(r => { const o={}; cols.forEach((c,i)=>{ const cell=r.c?.[i]; o[c]=cell?.f ?? cell?.v ?? ""; }); return o; })
-          .filter(o => Object.values(o).some(v => String(v).trim() !== "")));
+        resolve(dataRows.map(r => {
+          const o={};
+          cols.forEach((c,i)=>{
+            const cell = r.c?.[i];
+            const val = cell?.f ?? cell?.v ?? "";
+            const key = o.hasOwnProperty(c) ? `${c}_${i}` : c;
+            o[key] = val;
+          });
+          return o;
+        }).filter(o => Object.values(o).some(v => String(v).trim() !== "")));
       }catch(e){ reject(e); }
     }}}};
     const s = document.createElement("script"); s.id = cb;
@@ -500,6 +439,39 @@ function fetchViaJsonp(id, name){
     document.head.appendChild(s);
   });
 }
+
+/* HÀM CHUYÊN DỤNG LẤY MẢNG 2D THÔ CHO PICKUP (KHÔNG BỊ CORS HAY ĐỔI TIÊU ĐỀ) */
+function fetchViaJsonp2D(id, name){
+  return new Promise((resolve, reject)=>{
+    const cb = "__cb2d" + Date.now() + Math.floor(Math.random()*999);
+    const to = setTimeout(()=>{ cleanup(); reject(new Error("timeout")); }, 15000);
+    function cleanup(){ clearTimeout(to); const s=document.getElementById(cb); if(s) s.remove(); try{delete window.google;}catch(e){} }
+    window.google = { visualization: { Query: { setResponse: (resp)=>{
+      cleanup();
+      try{
+        if (resp.status !== "ok") throw new Error("gviz error");
+        const cols = resp.table.cols.map(c => c.label || c.id || "");
+        const rows = resp.table.rows || [];
+        const result2D = [];
+        result2D.push(cols);
+        for (const r of rows) {
+          const rowCells = [];
+          for (let i = 0; i < cols.length; i++) {
+            const cell = r.c?.[i];
+            rowCells.push(cell?.f ?? cell?.v ?? "");
+          }
+          result2D.push(rowCells);
+        }
+        resolve(result2D);
+      }catch(e){ reject(e); }
+    }}}};
+    const s = document.createElement("script"); s.id = cb;
+    s.onerror = ()=>{ cleanup(); reject(new Error("script error")); };
+    s.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}`;
+    document.head.appendChild(s);
+  });
+}
+
 async function fetchTab(id, tab){
   const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
   try{
@@ -510,26 +482,27 @@ async function fetchTab(id, tab){
     return p.data.filter(r => Object.values(r).some(v => String(v).trim() !== ""));
   }catch(e){ return await fetchViaJsonp(id, tab); }
 }
-async function fetchTabRaw(id, tab){
-  // Lấy nguyên tab dạng mảng thô (không map theo tên cột) — cần cho tab có các cột trùng tên
-  const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
-  const res = await fetch(url, {cache:"no-store"});
-  const txt = await res.text();
-  if (!res.ok || txt.trimStart().startsWith("<")) throw new Error("http "+res.status);
-  return Papa.parse(txt, {header:false, skipEmptyLines:false}).data;
-}
+
 async function loadAll(manual){
   const msg = document.getElementById("msg");
   msg.innerHTML = "Đang tải " + Object.keys(CFG.tabs).length + " tab...";
   const now = new Date().toLocaleString("vi-VN");
   for (const [key, tab] of Object.entries(CFG.tabs)){
     try{
-      DATA[key] = cleanParcelRows(await fetchViaJsonp(CFG.id, tab));
+      let rawData = await fetchViaJsonp(CFG.id, tab);
+      if (key === "backlog" || key === "assign") {
+        rawData = cleanParcelRows(rawData);
+      }
+      DATA[key] = rawData;
       const el = {backlog:"cntBacklog",assign:"cntAssign",fte:"cntFte",rider:"cntRider",pickup:"cntPickup",hangve:"cntHangve"}[key];
       if (el) document.getElementById(el).textContent = DATA[key].length;
     }catch(e){ 
       try {
-        DATA[key] = cleanParcelRows(await fetchTab(CFG.id, tab));
+        let rawData = await fetchTab(CFG.id, tab);
+        if (key === "backlog" || key === "assign") {
+          rawData = cleanParcelRows(rawData);
+        }
+        DATA[key] = rawData;
         const el = {backlog:"cntBacklog",assign:"cntAssign",fte:"cntFte",rider:"cntRider",pickup:"cntPickup",hangve:"cntHangve"}[key];
         if (el) document.getElementById(el).textContent = DATA[key].length;
       } catch(err) {
@@ -538,15 +511,25 @@ async function loadAll(manual){
       }
     }
   }
-  // Tab "Hàng đang về": tải dữ liệu thô theo vị trí cột để đọc đúng 2 khối WH | MP
-  try { DATA.hangveRaw = await fetchTabRaw(CFG.id, CFG.tabs.hangve); } catch(e){ DATA.hangveRaw = []; }
+
+  // TẢI CHUẨN MẢNG 2D DÀNH RIÊNG CHO PICKUP & HÀNG VỀ (ĐẢM BẢO KHÔNG MẤT DỮ LIỆU/KHÔNG DẦM CƠM)
+  try { DATA.pickupRaw = await fetchViaJsonp2D(CFG.id, CFG.tabs.pickup); } catch(e){ DATA.pickupRaw = []; }
+  try { DATA.hangveRaw = await fetchViaJsonp2D(CFG.id, CFG.tabs.hangve); } catch(e){ DATA.hangveRaw = []; }
+
+  const cntPk = document.getElementById("cntPickup");
+  if (cntPk && DATA.pickupRaw && DATA.pickupRaw.length > 1) {
+    cntPk.textContent = DATA.pickupRaw.length - 1;
+  }
+
   const hvTotal = computeHangVe().reduce((s,r)=>s+r.wh+r.mp, 0);
   const cntHv = document.getElementById("cntHangve");
   if (cntHv) cntHv.textContent = hvTotal || (DATA.hangve||[]).length;
+
   renderOverview(now); renderDetail();
-  msg.innerHTML = `<span class="ok">Xong lúc ${now} — Backlog ${DATA.backlog?.length||0}, FTE ${DATA.fte?.length||0}, Rider ${DATA.rider?.length||0}, Pickup ${DATA.pickup?.length||0}, Hàng về ${hvTotal.toLocaleString("vi-VN")}.</span>`;
+  msg.innerHTML = `<span class="ok">Xong lúc ${now} — Backlog ${DATA.backlog?.length||0}, FTE ${DATA.fte?.length||0}, Rider ${DATA.rider?.length||0}, Pickup ${(DATA.pickupRaw?.length ? DATA.pickupRaw.length-1 : 0)}, Hàng về ${hvTotal.toLocaleString("vi-VN")}.</span>`;
   setupTimer();
 }
+
 function countKV(rows){ let a=0,b=0; for (const r of rows){ (kvOf(r)==="KV3"?a++:b++); } return [a,b]; }
 function isSheetError(v){ return String(v ?? "").trim().startsWith("#"); }
 function cleanParcelRows(rows){
@@ -619,7 +602,6 @@ function renderOverview(now){
   if (DATA.backlog){ const [a,b]=countKV(DATA.backlog); set("kBacklog3",a); set("kBacklog4",b); set("tBacklog",a+b); document.getElementById("uBacklog3").textContent="Cập nhật: "+now; document.getElementById("uBacklog4").textContent="Cập nhật: "+now; }
   if (DATA.assign){ const [a,b]=countKV(DATA.assign); set("kAssign3",a); set("kAssign4",b); set("tAssign",a+b); document.getElementById("uAssign").textContent="Cập nhật: "+now; }
 
-  // TÍNH TOÁN DỮ LIỆU TỔNG HỢP HÀNG ĐANG VỀ WH VÀ MP CHO KV3 / KV4 — từ dữ liệu thô tab WH/MP
   const hvRows = computeHangVe();
   const sumBy = (kvName, field) => hvRows.filter(r=>r.kv===kvName).reduce((s,r)=>s+r[field], 0);
   const wh3 = sumBy("Khu vực 3","wh"), mp3 = sumBy("Khu vực 3","mp");
@@ -754,7 +736,7 @@ function showView(v){
 }
 function buildDetailTabs(){
   const el = document.getElementById("detailTabs");
-  el.innerHTML = Object.keys(CFG.tabs).map(k=>`<button data-k="${k}" class="${k===curDetail?'active':''}">${k} (${(DATA[k]||[]).length})</button>`).join("");
+  el.innerHTML = Object.keys(CFG.tabs).map(k=>`<button data-k="${k}" class="${k===curDetail?'active':''}">${k} (${k==='pickup' ? ((DATA.pickupRaw||[]).length ? (DATA.pickupRaw||[]).length-1 : 0) : (DATA[k]||[]).length})</button>`).join("");
   el.querySelectorAll("button").forEach(b => b.onclick = ()=>{ curDetail=b.dataset.k; detailPage.page=1; buildDetailTabs(); renderDetail(); });
 }
 
@@ -833,6 +815,151 @@ function renderFteCustom(rows, q) {
   return true;
 }
 
+/* XỬ LÝ TAB PICKUP NEW - ĐẢM BẢO HIỂN THỊ ĐỦ DỮ LIỆU CẢ 2 BẢNG SẠCH SẼ */
+function renderPickupCustom(q) {
+  const container = document.getElementById("detailTbl");
+  const info = document.getElementById("detailInfo");
+  container.className = "pk-table";
+
+  const rawArrs = DATA.pickupRaw || [];
+
+  if (!rawArrs || rawArrs.length <= 1) {
+    container.className = "";
+    container.innerHTML = "<tbody><tr><td style='padding:12px;color:var(--muted)'>Chưa tải được dữ liệu tab Pickup. Hãy bấm Refresh/Tải tất cả.</td></tr></tbody>";
+    if (info) info.textContent = "";
+    return;
+  }
+
+  let startIdx = rawArrs.findIndex(r => Array.isArray(r) && r.some(cell => {
+    const n = normStr(cell);
+    return n.includes("khu vuc") || n.includes("driver") || n.includes("district");
+  }));
+  if (startIdx < 0) startIdx = 0;
+
+  let listC1 = [], listC2 = [];
+  let totalC1 = 0, totalC2 = 0;
+
+  for (let i = startIdx + 1; i < rawArrs.length; i++) {
+    const r = rawArrs[i] || [];
+
+    // Bảng 1: COT 1 (Cột A..F)
+    const c1_kv = String(r[0] ?? "").trim();
+    const c1_q  = String(r[1] ?? "").trim();
+    const c1_d  = String(r[2] ?? "").trim();
+    const c1_dr = String(r[3] ?? "").trim();
+    const c1_id = String(r[4] ?? "").trim();
+    const c1_v  = String(r[5] ?? "").trim();
+
+    // Bảng 2: COT 2 (Cột H..M)
+    const c2_kv = String(r[7] ?? "").trim();
+    const c2_q  = String(r[8] ?? "").trim();
+    const c2_d  = String(r[9] ?? "").trim();
+    const c2_dr = String(r[10] ?? "").trim();
+    const c2_id = String(r[11] ?? "").trim();
+    const c2_v  = String(r[12] ?? "").trim();
+
+    if (c1_dr || c1_kv || c1_v) {
+      const num1 = parseInt(c1_v.replace(/[^\d]/g, ""), 10) || 0;
+      listC1.push({ kv: c1_kv, q: c1_q, d: c1_d, dr: c1_dr, id: c1_id, v: c1_v, num: num1 });
+    }
+
+    if (c2_dr || c2_kv || c2_v) {
+      const num2 = parseInt(c2_v.replace(/[^\d]/g, ""), 10) || 0;
+      listC2.push({ kv: c2_kv, q: c2_q, d: c2_d, dr: c2_dr, id: c2_id, v: c2_v, num: num2 });
+    }
+  }
+
+  if (q) {
+    listC1 = listC1.filter(item => Object.values(item).join(" ").toLowerCase().includes(q));
+    listC2 = listC2.filter(item => Object.values(item).join(" ").toLowerCase().includes(q));
+  }
+
+  totalC1 = listC1.reduce((sum, item) => sum + item.num, 0);
+  totalC2 = listC2.reduce((sum, item) => sum + item.num, 0);
+
+  const maxRows = Math.max(listC1.length, listC2.length);
+
+  if (maxRows === 0) {
+    container.className = "";
+    container.innerHTML = "<tbody><tr><td style='padding:12px;color:var(--muted)'>Không có dữ liệu phù hợp.</td></tr></tbody>";
+    if (info) info.textContent = "";
+    return;
+  }
+
+  let tbodyHtml = "<tbody>";
+  for (let i = 0; i < maxRows; i++) {
+    const r1 = listC1[i] || { kv:"", q:"", d:"", dr:"", id:"", v:"" };
+    const r2 = listC2[i] || { kv:"", q:"", d:"", dr:"", id:"", v:"" };
+
+    tbodyHtml += `
+      <tr style="font-size: 10.5px; height:24px;">
+        <td style="padding:3px 4px; text-align:center;">${r1.kv}</td>
+        <td style="padding:3px 4px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r1.q}</td>
+        <td style="padding:3px 4px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r1.d}</td>
+        <td style="padding:3px 4px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${r1.dr}"><b>${r1.dr}</b></td>
+        <td style="padding:3px 4px; text-align:center;">${r1.id}</td>
+        <td style="padding:3px 4px; text-align:center; font-weight:800; color:var(--primary-dark); font-size:11.5px;">${r1.v}</td>
+        <td class="blank-col" style="width:8px; background:#e2e8f0; padding:0; border:none;"></td>
+        <td style="padding:3px 4px; text-align:center;">${r2.kv}</td>
+        <td style="padding:3px 4px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r2.q}</td>
+        <td style="padding:3px 4px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r2.d}</td>
+        <td style="padding:3px 4px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${r2.dr}"><b>${r2.dr}</b></td>
+        <td style="padding:3px 4px; text-align:center;">${r2.id}</td>
+        <td style="padding:3px 4px; text-align:center; font-weight:800; color:var(--primary-dark); font-size:11.5px;">${r2.v}</td>
+      </tr>
+    `;
+  }
+  tbodyHtml += "</tbody>";
+
+  const colGroupHtml = `
+    <colgroup>
+      <col style="width: 4%">    <!-- KV 1 -->
+      <col style="width: 8.5%">  <!-- Quận 1 -->
+      <col style="width: 9.5%">  <!-- District 1 (Thu nhỏ) -->
+      <col style="width: 17%">   <!-- Driver 1 -->
+      <col style="width: 5.5%">  <!-- ID 1 -->
+      <col style="width: 5%">    <!-- COT 1 (Tăng độ rộng gấp đôi) -->
+      <col style="width: 1%">    <!-- Vạch phân cách -->
+      <col style="width: 4%">    <!-- KV 2 -->
+      <col style="width: 8.5%">  <!-- Quận 2 -->
+      <col style="width: 9.5%">  <!-- District 2 (Thu nhỏ) -->
+      <col style="width: 17%">   <!-- Driver 2 -->
+      <col style="width: 5.5%">  <!-- ID 2 -->
+      <col style="width: 5%">    <!-- COT 2 (Tăng độ rộng gấp đôi) -->
+    </colgroup>
+  `;
+
+  const theadHtml = `
+    <thead>
+      <tr>
+        <th colspan="6" style="background:#0f172a; color:#fff; text-align:center; font-size:11.5px; font-weight:800; padding:5px; border-bottom:1px solid #334155;">📦 PICKUP COT 1</th>
+        <th class="blank-col" style="background:#cbd5e1; border:none;"></th>
+        <th colspan="6" style="background:#0f172a; color:#fff; text-align:center; font-size:11.5px; font-weight:800; padding:5px; border-bottom:1px solid #334155;">📦 PICKUP COT 2</th>
+      </tr>
+      <tr style="font-size: 10.5px; background:#f8fafc;">
+        <th style="padding:4px; text-align:center;">Khu vực</th>
+        <th style="padding:4px; text-align:center;">Quận</th>
+        <th style="padding:4px; text-align:center;">District</th>
+        <th style="padding:4px; text-align:center;">Driver</th>
+        <th style="padding:4px; text-align:center;">ID</th>
+        <th style="padding:4px; text-align:center;">COT 1</th>
+        <th class="blank-col" style="background:#cbd5e1; border:none;"></th>
+        <th style="padding:4px; text-align:center;">Khu vực</th>
+        <th style="padding:4px; text-align:center;">Quận</th>
+        <th style="padding:4px; text-align:center;">District</th>
+        <th style="padding:4px; text-align:center;">Driver</th>
+        <th style="padding:4px; text-align:center;">ID</th>
+        <th style="padding:4px; text-align:center;">COT 2</th>
+      </tr>
+    </thead>
+  `;
+
+  container.innerHTML = `<table style="table-layout:fixed; width:100%; border-collapse:collapse;">${colGroupHtml}${theadHtml}${tbodyHtml}</table>`;
+  if (info) {
+    info.textContent = `Tổng COT 1: ${totalC1.toLocaleString("vi-VN")} đơn (${listC1.length} tài xế) — Tổng COT 2: ${totalC2.toLocaleString("vi-VN")} đơn (${listC2.length} tài xế) — Tổng toàn bộ Pickup: ${(totalC1 + totalC2).toLocaleString("vi-VN")} đơn.`;
+  }
+}
+
 function buildHangveChart(hvRows){
   if (!hvRows.length) return `<div style="padding:12px;color:var(--muted)">Chưa có dữ liệu.</div>`;
   const maxV = Math.max(1, ...hvRows.map(r=>Math.max(r.wh, r.mp)));
@@ -869,9 +996,6 @@ function buildHangveChart(hvRows){
 function buildHangveTable(hvRows){
   if (!hvRows.length) return `<div style="padding:12px;color:var(--muted)">Không có dữ liệu. Vào Cài đặt kiểm tra tên tab WH / MP.</div>`;
   const kvs = [...new Set(hvRows.map(r=>r.kv))].sort();
-  // table-layout:fixed + <colgroup> để 4 cột Quận/WH/MP/Tổng chia đều & thẳng hàng tuyệt đối.
-  // Mỗi hàng đều có đủ 4 ô, KHÔNG colspan để tránh lệch.
-  // LƯU Ý: <colgroup> bắt buộc phải nằm NGAY SAU thẻ mở <table> — đặt ngoài table sẽ bị trình duyệt bỏ qua.
   let html = `
     <table class="hv-table" style="width:100%;max-width:1180px;margin:0 auto;">
       <colgroup>
@@ -903,6 +1027,7 @@ function renderHangVeCustom(rows) {
     </div>
     <div>${buildHangveTable(hvRows)}</div>
   `;
+  document.getElementById("detailTbl").className = "";
   document.getElementById("detailTbl").innerHTML = `<tr><td style="padding:0; border:none;">${html}</td></tr>`;
   const totWH = hvRows.reduce((s,r)=>s+r.wh,0), totMP = hvRows.reduce((s,r)=>s+r.mp,0);
   document.getElementById("detailInfo").textContent = `Tổng WH: ${totWH.toLocaleString("vi-VN")} — Tổng MP: ${totMP.toLocaleString("vi-VN")} — Tổng cộng: ${(totWH+totMP).toLocaleString("vi-VN")} vận đơn (đếm theo Mã Vận Đơn trong tab WH/MP).`;
@@ -919,10 +1044,17 @@ function renderDetail(){
   document.getElementById("pagerTop").innerHTML = "";
   document.getElementById("pagerBot").innerHTML = "";
 
+  if (curDetail === "pickup") {
+    renderPickupCustom(q);
+    return;
+  }
+
   if (curDetail === "hangve") {
     renderHangVeCustom(rows);
     return;
   }
+
+  document.getElementById("detailTbl").className = "";
 
   if (!rows.length) {
     document.getElementById("detailTbl").innerHTML = "<tbody><tr><td>Chưa có dữ liệu. Vào Cài đặt kiểm tra tên tab.</td></tr></tbody>";
@@ -989,13 +1121,11 @@ function renderDetail(){
   theadHtml += "</thead>";
 
   const displayDataAll = hasSubHeaderRow ? f.slice(1) : f;
-  // === PHÂN TRANG ===
   if (detailPage.pageSize === 0) detailPage.pageSize = 200;
   const totalRowsAll = displayDataAll.length;
   const totalPages = Math.max(1, Math.ceil(totalRowsAll / detailPage.pageSize));
   if (detailPage.page > totalPages) detailPage.page = totalPages;
   if (detailPage.page < 1) detailPage.page = 1;
-  // Lưu lại để goPage() đọc lại — TRƯỚC ĐÂY filterCachedLen luôn =0 khiến mọi nút phân trang bị vô hiệu
   detailPage._total = totalRowsAll;
   detailPage._pages = totalPages;
   filterCachedLen = totalRowsAll;
@@ -1029,19 +1159,12 @@ function renderDetail(){
 
   const pageBarTop = buildPager(totalRowsAll, f.length);
   const pageBarBot = buildPager(totalRowsAll, f.length);
-  // Gộp thead+tbody vào CÙNG 1 bảng (trước đây là 2 bảng tách biệt → header và data tự tính
-  // độ rộng cột riêng, không thể thẳng hàng). Sticky header vẫn hoạt động bình thường vì
-  // đây là kỹ thuật CSS thuần (th { position:sticky }) — giống hệt cách bảng pivot Backlog/Assign
-  // đang làm và đã thẳng cột đúng.
   document.getElementById("detailTbl").innerHTML = theadHtml + tbodyHtml;
   document.getElementById("pagerTop").innerHTML = pageBarTop;
   document.getElementById("pagerBot").innerHTML = pageBarBot;
   document.getElementById("detailInfo").textContent = `Tổng ${f.length.toLocaleString("vi-VN")}/${rows.length.toLocaleString("vi-VN")} dòng — hiển thị trang ${detailPage.page}/${totalPages} (${startIdx+1}–${endIdx}).`;
 }
 
-// ===== PHÂN TRANG (dùng chung cho mọi tab dữ liệu) =====
-// LỖI TRƯỚC: filterCachedLen luôn =0 → goPage() tính tp=1 → bấm «Sau» không qua trang được.
-// ĐÃ SỬA: dùng detailPage._total (lưu trong renderDetail) làm nguồn chính; gắn sự kiện bằng delegation để chắc chắn nút «Sau/Trước/Cuối» hoạt động sau mỗi lần re-render.
 let detailPage = { page: 1, pageSize: 200, _total: 0, _pages: 1 };
 function buildPager(totalRows, filteredRows){
   const ps = Number(detailPage.pageSize) || 200;
@@ -1072,18 +1195,15 @@ function buildPager(totalRows, filteredRows){
 }
 function goPage(p){
   const ps = Number(detailPage.pageSize) || 200;
-  // Ưu tiên total đã cache trong lần render gần nhất; fallback 0 nếu chưa có
   const totalRows = Number(detailPage._total) || 0;
   const tp = Math.max(1, Math.ceil(totalRows / ps));
   const target = Math.min(Math.max(1, p|0), tp);
   if (target === detailPage.page) return;
   detailPage.page = target;
   renderDetail();
-  // Cuộn bảng lên đầu để thấy rõ đã đổi trang
   const tbl = document.getElementById("detailTbl");
   if (tbl && tbl.scrollIntoView) tbl.scrollIntoView({behavior:"smooth", block:"start"});
 }
-// Gắn sự kiện phân trang bằng event delegation — duy nhất 1 lần, không bị innerHTML xóa
 document.addEventListener("click", function(e){
   const bar = e.target.closest && e.target.closest(".pg-bar");
   if (!bar) return;
@@ -1114,7 +1234,7 @@ function assignCols(rows){
   const maTX = keys.find(k=>normStr(k).includes("ma")&&normStr(k).includes("tai")&&normStr(k).includes("xe"));
   const cot = keys.find(k=>normStr(k)==="cot");
   const maDon = keys.find(k=>normStr(k).includes("ma")&&normStr(k).includes("van")&&normStr(k).includes("don")) || keys.find(k=>normStr(k).includes("ma")&&normStr(k).includes("don"));
-  if (!quan || !ten || !cot || !maDon) return null;
+  if (!quan || !cot || !maDon) return null;
   return { quan, ten, maTX, cot, maDon };
 }
 
@@ -1125,9 +1245,9 @@ function renderAssignPivot(rows){
   const ac = assignCols(rows);
   if (!ac){ wrap.style.display = "none"; return; }
   wrap.style.display = "";
-  const data = rows.filter(r=>String(r[ac.maDon]??"").trim()!=="" && String(r[ac.ten]??"").trim()!=="");
-  
-  const cotVals = [...new Set(data.map(r => String(r[ac.cot] ?? "").trim() || "(Trống)"))].sort();
+
+  const data = rows;
+  const cotVals = [...new Set(data.map(r => String(r[ac.cot] ?? "").trim() || "(Trống COT)"))].sort();
   const panes = document.getElementById("assignPanes");
   const mins = Number(document.getElementById("autoRefresh").value) || 0;
 
@@ -1143,8 +1263,8 @@ function renderAssignPivot(rows){
   `).join("") || `<div>Không có dữ liệu COT.</div>`;
 
   cotVals.forEach((cv, i) => {
-    const sub = data.filter(r => (String(r[ac.cot] ?? "").trim() || "(Trống)") === cv);
-    const quans = [...new Set(sub.map(r => String(r[ac.quan] ?? "").trim() || "(Trống)"))].sort();
+    const sub = data.filter(r => (String(r[ac.cot] ?? "").trim() || "(Trống COT)") === cv);
+    const quans = [...new Set(sub.map(r => String(r[ac.quan] ?? "").trim() || "(Trống Quận)"))].sort();
     
     let html = `
       <thead>
@@ -1160,15 +1280,28 @@ function renderAssignPivot(rows){
 
     let gt = 0;
     for (const qn of quans){
-      const inQ = sub.filter(r=>(String(r[ac.quan]??"").trim()||"(Trống)")===qn);
-      const key = cv+"|"+qn, closed = !!asCollapsed[key];
+      const inQ = sub.filter(r => (String(r[ac.quan] ?? "").trim() || "(Trống Quận)") === qn);
+      const key = cv + "|" + qn, closed = !!asCollapsed[key];
       const riders = {};
+
       for (const r of inQ){
-        const nm = String(r[ac.ten]??"").trim()||"(Trống)";
-        if (!riders[nm]) riders[nm] = { n:0, ma: String(ac.maTX?r[ac.maTX]??"":"") };
-        riders[nm].n++;
+        const rawName = String(r[ac.ten] ?? "").trim();
+        const normKey = rawName ? rawName.toUpperCase().replace(/\s+/g, ' ') : "(TRỐNG TÊN)";
+        const rawMa = String(ac.maTX ? r[ac.maTX] ?? "" : "").trim();
+        const validMa = (rawMa && rawMa !== "0") ? rawMa : "0";
+        
+        if (!riders[normKey]) {
+          riders[normKey] = { displayName: rawName || "(Trống Tên)", n: 0, ma: validMa };
+        } else {
+          if ((riders[normKey].ma === "0" || !riders[normKey].ma) && validMa !== "0") {
+            riders[normKey].ma = validMa;
+          }
+        }
+        riders[normKey].n++;
       }
-      const tot = inQ.length; gt += tot;
+
+      const tot = inQ.length; 
+      gt += tot;
       const safe = key.replace(/'/g,"");
       
       html += `<tr class="qrow" onclick="asCollapsed['${safe}']=!asCollapsed['${safe}'];renderDetail()">
@@ -1177,12 +1310,14 @@ function renderAssignPivot(rows){
       </tr>`;
       
       if (!closed){
-        for (const nm of Object.keys(riders).sort()){
+        const sortedKeys = Object.keys(riders).sort((a,b) => riders[a].displayName.localeCompare(riders[b].displayName));
+        for (const k of sortedKeys){
+          const item = riders[k];
           html += `<tr>
             <td></td>
-            <td title="${nm}">${nm}</td>
-            <td style="text-align:right">${riders[nm].ma}</td>
-            <td style="text-align:right">${riders[nm].n}</td>
+            <td title="${item.displayName}">${item.displayName}</td>
+            <td style="text-align:right">${item.ma}</td>
+            <td style="text-align:right">${item.n}</td>
           </tr>`;
         }
         html += `<tr class="sub">
@@ -1259,7 +1394,7 @@ function bpTable(tblId, totId, rows, tag){
 function renderBacklogPivot(rows){
   const wrap = document.getElementById("backlogPivotWrap");
   if (!wrap) return;
-  if (curDetail !== "backlog" && curDetail !== "pickup"){ wrap.style.display = "none"; return; }
+  if (curDetail !== "backlog"){ wrap.style.display = "none"; return; }
   if (!parcelCols(rows)){ wrap.style.display = "none"; return; }
   wrap.style.display = "";
   const kv3 = [], kv4 = [];
@@ -1268,21 +1403,28 @@ function renderBacklogPivot(rows){
   bpTable("bpTbl4", "bpTot4", kv4, "KV4");
 }
 function exportDetail(){
-  const rows = DATA[curDetail]||[];
+  let rows = DATA[curDetail] || [];
+  
+  if (curDetail === "pickup" && DATA.pickupRaw && DATA.pickupRaw.length) {
+    rows = DATA.pickupRaw;
+  }
+  
+  if (!rows || !rows.length) {
+    alert("Không có dữ liệu để xuất file CSV!");
+    return;
+  }
+
+  // Thêm ký tự UTF-8 BOM (\uFEFF) ở đầu chuỗi để Excel mở không bị lỗi phông
+  const csvText = "\uFEFF" + Papa.unparse(rows);
+  const blob = new Blob([csvText], { type: "text/csv;charset=utf-8;" });
+  
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([Papa.unparse(rows)],{type:"text/csv"}));
-  a.download = curDetail+".csv"; a.click();
-}
-function buildCfg(){
-  document.getElementById("cfgId").value = CFG.id;
-  document.getElementById("cfgTabs").innerHTML = Object.entries(CFG.tabs).map(([k,v])=>`<div class="cfg"><b>${k}</b><input data-k="${k}" value="${v}"><span class="ok">${(DATA[k]||[]).length} dòng</span></div>`).join("");
-}
-function saveCfg(){
-  CFG.id = document.getElementById("cfgId").value.trim();
-  document.querySelectorAll("#cfgTabs input").forEach(i => CFG.tabs[i.dataset.k] = i.value.trim());
-  localStorage.setItem("spx_hub_cfg", JSON.stringify(CFG));
-  document.getElementById("cfgMsg").textContent = "Đã lưu. Đang tải lại...";
-  loadAll(true);
+  a.href = URL.createObjectURL(blob);
+  a.download = (curDetail || "export") + "_" + new Date().toISOString().slice(0,10) + ".csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
 }
 function resetCfg(){
   CFG = { id: DEFAULT_ID, tabs: {...DEFAULT_TABS} };
@@ -1298,6 +1440,5 @@ function setupTimer(){
 document.getElementById("autoRefresh").onchange = setupTimer;
 showView("tongquan"); loadAll(false);
 </script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>
