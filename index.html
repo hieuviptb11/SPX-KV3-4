@@ -108,6 +108,7 @@
   #assignPanes table.pivot th:nth-child(4), #assignPanes table.pivot td:nth-child(4) { width: 15%; text-align: right; white-space: nowrap; font-weight: bold; }
 
   .table-container { overflow: auto; max-height: 520px; border: 1px solid #e2e8f0; border-radius: 8px; }
+  #detailTbl.pickcbg-table th, #detailTbl.pickcbg-table td { white-space:nowrap; padding:4px 8px; font-size:10px; }
   #detailTbl { font-size: 10.5px; border-collapse: separate; border-spacing: 0; width: 100%; }
   #detailTbl thead tr:nth-child(1) th { position: sticky; top: 0; background: #0f172a; color: #ffffff; z-index: 12; padding: 6px 8px; line-height: 1.35; font-size: 10.5px; border-bottom: 1px solid #334155; }
   #detailTbl thead tr:nth-child(2) th { position: sticky; top: 26px; background: #1e293b; color: #cbd5e1; z-index: 11; padding: 4px 8px; line-height: 1.25; font-size: 10px; font-weight: normal; }
@@ -137,6 +138,35 @@
   ::-webkit-scrollbar-track { background:#f1f5f9; }
   ::-webkit-scrollbar-thumb { background:var(--primary-ring); border-radius:6px; }
   ::-webkit-scrollbar-thumb:hover { background:var(--primary); }
+
+  /* ===== DASH MODE (nen toi) ===== */
+  body.dark { --bg:#0b1220; --card:#16202f; --ink:#e8eef6; --muted:#93a1b5; --line:#2a3648; --primary-light:#3a1c07; }
+  body.dark aside { background:#101827; border-right:1px solid #263244; }
+  body.dark .nav button { color:#dbe4f0; }
+  body.dark .nav button:hover { background:#1a2536; }
+  body.dark .nav button.active { background:#3a1c07; color:#fdba74; }
+  body.dark .nav button .cnt { background:#223047; color:#93a1b5; }
+  body.dark .topbar select, body.dark .topbar input { background:#16202f; color:#e8eef6; border-color:#2a3648; }
+  body.dark .tabs button, body.dark .mnav button { background:#16202f; color:#dbe4f0; border-color:#2a3648; }
+  body.dark .cfg input { background:#16202f; color:#e8eef6; border-color:#2a3648; }
+  body.dark #detailSearch { background:#16202f; color:#e8eef6; border-color:#2a3648; }
+  body.dark .pg-bar button, body.dark .pg-bar select, body.dark .pg-bar input { background:#16202f; color:#e8eef6; border-color:#2a3648; }
+  body.dark .as-card { border-color:#2a3648; }
+  body.dark .table-container { border-color:#2a3648; }
+  body.dark table.pivot tr.qrow { background:#223047; }
+  body.dark table.pivot tr.sub { background:#3a3008; }
+  body.dark table.pivot tr.grand { background:#9a3412; color:#fff; }
+  body.dark table.hv-table tr.kv-row td { background:#3a1c07; color:#fdba74; }
+  body.dark table.hv-table tr.sub-row td { background:#3a3008; }
+  body.dark table.hv-table tr.grand-row td { background:#9a3412; color:#fff; }
+  body.dark table.pk-table td { border-color:#2a3648; }
+  body.dark table.pk-table tr:hover td { background:#1a2536; }
+  body.dark th, body.dark td { border-bottom-color:#223047; }
+  body.dark .kcard, body.dark .card { box-shadow:none; border:1px solid #223047; }
+  body.dark .hv-chart-legend { color:#93a1b5; }
+  body.dark .hv-chart-svg-wrap svg text[fill="#0f172a"] { fill:#e8eef6; }
+  body.dark .hv-chart-svg-wrap svg text[fill="#64748b"] { fill:#93a1b5; }
+  body.dark ::-webkit-scrollbar-track { background:#101827; }
 </style>
 </head>
 <body>
@@ -146,10 +176,11 @@
     <button data-view="tongquan" class="active">📊 Dashboard</button>
     <button data-view="backlog">📦 Backlog <span class="cnt" id="cntBacklog">–</span></button>
     <button data-view="assign">🧾 Assign <span class="cnt" id="cntAssign">–</span></button>
+    <button data-view="pickup">📥 Dí Pick <span class="cnt" id="cntPickup">–</span></button>
+    <button data-view="pickchuabangiao">📦 Pick Chưa Bàn Giao <span class="cnt" id="cntPickCBG">–</span></button>
+    <button data-view="hangve">🚚 Hàng đang về <span class="cnt" id="cntHangve">–</span></button>
     <button data-view="fte">🧑‍💼 Lịch FTE <span class="cnt" id="cntFte">–</span></button>
     <button data-view="rider">🛵 Lịch Rider <span class="cnt" id="cntRider">–</span></button>
-    <button data-view="pickup">📥 Pickup <span class="cnt" id="cntPickup">–</span></button>
-    <button data-view="hangve">🚚 Hàng đang về <span class="cnt" id="cntHangve">–</span></button>
     <button data-view="cauhinh">⚙️ Cài đặt</button>
   </div>
   <div style="margin-top:auto;font-size:12px;color:var(--muted)">Admin SPX<br>● Đang hoạt động</div>
@@ -270,7 +301,9 @@
   return total;
 }
 const DEFAULT_ID = "1NbF60xYLto8nJf0krdJ7WYfl6H0fAJ4YG9Xyj42KuZY";
-const DEFAULT_TABS = { backlog:"Backlog", assign:"Assign", fte:"FTE", rider:"Lịch Rider", pickup:"Pickup New", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID" };
+const DEFAULT_TABS = { backlog:"Backlog", assign:"Assign", fte:"FTE", rider:"Lịch Rider", pickup:"Pickup New", pickchuabangiao:"Pick Chưa Bàn Giao", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID" };
+const TAB_LABEL = { tongquan:"Dashboard", backlog:"Backlog", assign:"Assign", fte:"Lịch FTE", rider:"Lịch Rider", pickup:"Dí Pick", pickchuabangiao:"Pick Chưa Bàn Giao", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID", cauhinh:"Cài đặt" };
+function tabLabel(k){ return TAB_LABEL[k] || k; }
 let CFG = loadCfg();
 let DATA = {}; let timer = null; let curDetail = "backlog"; let rosterDate = "";
 
@@ -285,7 +318,7 @@ function loadCfg(){
       return c;
     }
   } catch(e){}
-  return { id: DEFAULT_ID, tabs: {...DEFAULT_TABS} };
+  return { id: DEFAULT_ID, tabs: {...DEFAULT_TABS}, dashMode: false };
 }
 function normStr(s){ return String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d"); }
 function kvOf(r){
@@ -425,10 +458,10 @@ function computeHangVe(){
 /* HÀM CHUẨN ĐỌC BẢNG CHO BACKLOG/ASSIGN/FTE/RIDER (SẠCH SẼ KHÔNG RÁC) */
 function fetchViaJsonp(id, name){
   return new Promise((resolve, reject)=>{
-    const cb = "__cb" + Date.now() + Math.floor(Math.random()*999);
+    const cb = "__cb" + Date.now() + "_" + (window.__cbSeq = (window.__cbSeq||0)+1) + "_" + Math.floor(Math.random()*1e6);
     const to = setTimeout(()=>{ cleanup(); reject(new Error("timeout")); }, 15000);
-    function cleanup(){ clearTimeout(to); const s=document.getElementById(cb); if(s) s.remove(); try{delete window.google;}catch(e){} }
-    window.google = { visualization: { Query: { setResponse: (resp)=>{
+    function cleanup(){ clearTimeout(to); const s=document.getElementById(cb); if(s) s.remove(); try{delete window[cb];}catch(e){ window[cb]=undefined; } }
+    window[cb] = (resp)=>{
       cleanup();
       try{
         if (resp.status !== "ok") throw new Error("gviz error");
@@ -453,10 +486,10 @@ function fetchViaJsonp(id, name){
           return o;
         }).filter(o => Object.values(o).some(v => String(v).trim() !== "")));
       }catch(e){ reject(e); }
-    }}}};
+    };
     const s = document.createElement("script"); s.id = cb;
     s.onerror = ()=>{ cleanup(); reject(new Error("script error")); };
-    s.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}`;
+    s.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json;responseHandler:${cb}&sheet=${encodeURIComponent(name)}`;
     document.head.appendChild(s);
   });
 }
@@ -464,10 +497,10 @@ function fetchViaJsonp(id, name){
 /* HÀM CHUYÊN DỤNG LẤY MẢNG 2D THÔ CHO PICKUP (KHÔNG BỊ CORS HAY ĐỔI TIÊU ĐỀ) */
 function fetchViaJsonp2D(id, name){
   return new Promise((resolve, reject)=>{
-    const cb = "__cb2d" + Date.now() + Math.floor(Math.random()*999);
+    const cb = "__cb2d" + Date.now() + "_" + (window.__cbSeq = (window.__cbSeq||0)+1) + "_" + Math.floor(Math.random()*1e6);
     const to = setTimeout(()=>{ cleanup(); reject(new Error("timeout")); }, 15000);
-    function cleanup(){ clearTimeout(to); const s=document.getElementById(cb); if(s) s.remove(); try{delete window.google;}catch(e){} }
-    window.google = { visualization: { Query: { setResponse: (resp)=>{
+    function cleanup(){ clearTimeout(to); const s=document.getElementById(cb); if(s) s.remove(); try{delete window[cb];}catch(e){ window[cb]=undefined; } }
+    window[cb] = (resp)=>{
       cleanup();
       try{
         if (resp.status !== "ok") throw new Error("gviz error");
@@ -485,10 +518,10 @@ function fetchViaJsonp2D(id, name){
         }
         resolve(result2D);
       }catch(e){ reject(e); }
-    }}}};
+    };
     const s = document.createElement("script"); s.id = cb;
     s.onerror = ()=>{ cleanup(); reject(new Error("script error")); };
-    s.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}`;
+    s.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json;responseHandler:${cb}&sheet=${encodeURIComponent(name)}`;
     document.head.appendChild(s);
   });
 }
@@ -504,38 +537,44 @@ async function fetchTab(id, tab){
   }catch(e){ return await fetchViaJsonp(id, tab); }
 }
 
+async function fetchOneTab(id, tab, key){
+  try {
+    let d = await fetchViaJsonp(id, tab);
+    if (key === "backlog" || key === "assign") d = cleanParcelRows(d);
+    return d;
+  } catch(e) {
+    let d = await fetchTab(id, tab);
+    if (key === "backlog" || key === "assign") d = cleanParcelRows(d);
+    return d;
+  }
+}
+
 async function loadAll(manual){
   const msg = document.getElementById("msg");
-  msg.innerHTML = "Đang tải " + Object.keys(CFG.tabs).length + " tab...";
+  msg.innerHTML = "Đang tải " + Object.keys(CFG.tabs).length + " tab (song song)...";
   const now = new Date().toLocaleString("vi-VN");
-  for (const [key, tab] of Object.entries(CFG.tabs)){
-    try{
-      let rawData = await fetchViaJsonp(CFG.id, tab);
-      if (key === "backlog" || key === "assign") {
-        rawData = cleanParcelRows(rawData);
-      }
-      DATA[key] = rawData;
-      const el = {backlog:"cntBacklog",assign:"cntAssign",fte:"cntFte",rider:"cntRider",hangve:"cntHangve"}[key];
-      if (el) document.getElementById(el).textContent = DATA[key].length;
-    }catch(e){ 
-      try {
-        let rawData = await fetchTab(CFG.id, tab);
-        if (key === "backlog" || key === "assign") {
-          rawData = cleanParcelRows(rawData);
-        }
-        DATA[key] = rawData;
-        const el = {backlog:"cntBacklog",assign:"cntAssign",fte:"cntFte",rider:"cntRider",hangve:"cntHangve"}[key];
-        if (el) document.getElementById(el).textContent = DATA[key].length;
-      } catch(err) {
-        DATA[key] = []; 
-        msg.innerHTML = `<div class="err">Tab ${tab}: ${e.message}. Kiểm tra tên tab + Share Anyone.</div>`; 
-      }
+  // TAI SONG SONG tat ca tab (ban cu doi tung tab noi tiep -> 15-20s).
+  // Pickup & Hang ve chi dung ban raw 2D de ve -> bo qua ban parsed cho nhe.
+  const fails = [];
+  const jobs = Object.entries(CFG.tabs)
+    .filter(([key]) => key !== "pickup" && key !== "hangve")
+    .map(async ([key, tab]) => {
+      try { DATA[key] = await fetchOneTab(CFG.id, tab, key); }
+      catch(e) { DATA[key] = []; fails.push(tab); }
+    });
+  jobs.push(
+    fetchViaJsonp2D(CFG.id, CFG.tabs.pickup).then(v => { DATA.pickupRaw = v; DATA.pickup = v; }).catch(() => { DATA.pickupRaw = []; DATA.pickup = []; fails.push(CFG.tabs.pickup); }),
+    fetchViaJsonp2D(CFG.id, CFG.tabs.hangve).then(v => { DATA.hangveRaw = v; DATA.hangve = v; }).catch(() => { DATA.hangveRaw = []; DATA.hangve = []; fails.push(CFG.tabs.hangve); })
+  );
+  await Promise.all(jobs);
+  {
+    const cntMap = {backlog:"cntBacklog",assign:"cntAssign",fte:"cntFte",rider:"cntRider",pickchuabangiao:"cntPickCBG",hangve:"cntHangve"};
+    for (const [k, eid] of Object.entries(cntMap)){
+      const cEl = document.getElementById(eid);
+      if (cEl) cEl.textContent = (DATA[k]||[]).length;
     }
   }
-
-  // TẢI CHUẨN MẢNG 2D DÀNH RIÊNG CHO PICKUP & HÀNG VỀ
-  try { DATA.pickupRaw = await fetchViaJsonp2D(CFG.id, CFG.tabs.pickup); } catch(e){ DATA.pickupRaw = []; }
-  try { DATA.hangveRaw = await fetchViaJsonp2D(CFG.id, CFG.tabs.hangve); } catch(e){ DATA.hangveRaw = []; }
+  if (fails.length) window.__loadFails = fails;
 
   // HIỂN THỊ TỔNG SỐ ĐƠN PICKUP LÊN MENU BÊN TRÁI
   const pkTotal = computePickupTotal();
@@ -547,7 +586,8 @@ async function loadAll(manual){
   if (cntHv) cntHv.textContent = hvTotal || (DATA.hangve||[]).length;
 
   renderOverview(now); renderDetail();
-  msg.innerHTML = `<span class="ok">Xong lúc ${now} — Backlog ${DATA.backlog?.length||0}, FTE ${DATA.fte?.length||0}, Rider ${DATA.rider?.length||0}, Pickup ${pkTotal.toLocaleString("vi-VN")}, Hàng về ${hvTotal.toLocaleString("vi-VN")}.</span>`;
+  const failMsg = fails.length ? `<div class="err">Không tải được tab: ${fails.join(", ")}. Kiểm tra tên tab + Share Anyone.</div>` : "";
+  msg.innerHTML = `<span class="ok">Xong lúc ${now} — Backlog ${DATA.backlog?.length||0}, FTE ${DATA.fte?.length||0}, Rider ${DATA.rider?.length||0}, Pickup ${pkTotal.toLocaleString("vi-VN")}, Hàng về ${hvTotal.toLocaleString("vi-VN")}.</span>` + failMsg;
   setupTimer();
 }
 
@@ -741,24 +781,24 @@ function renderOverview(now){
   }
 }
 
-const views = ["tongquan","backlog","assign","fte","rider","pickup","hangve","cauhinh"];
+const views = ["tongquan","backlog","assign","pickup","pickchuabangiao","hangve","fte","rider","cauhinh"];
 document.querySelectorAll("#sideNav button").forEach(b => b.onclick = ()=>showView(b.dataset.view));
 function showView(v){
   document.querySelectorAll("#sideNav button").forEach(b => b.classList.toggle("active", b.dataset.view===v));
   const mn = document.getElementById("mnav");
-  mn.innerHTML = views.map(x=>`<button data-v="${x}" class="${x===v?'active':''}">${x}</button>`).join("");
+  mn.innerHTML = views.map(x=>`<button data-v="${x}" class="${x===v?'active':''}">${tabLabel(x)}</button>`).join("");
   mn.querySelectorAll("button").forEach(b => b.onclick = ()=>showView(b.dataset.v));
   document.getElementById("view-tongquan").style.display = v==="tongquan" ? "" : "none";
   document.getElementById("view-cauhinh").style.display = v==="cauhinh" ? "" : "none";
   document.getElementById("view-detail").style.display = (v!=="tongquan" && v!=="cauhinh") ? "" : "none";
   if (v!=="tongquan" && v!=="cauhinh"){ curDetail = v; detailPage.page=1; buildDetailTabs(); renderDetail(); }
   if (v==="cauhinh") buildCfg();
-  document.getElementById("pageTitle").textContent = v==="tongquan" ? "Tổng quan - 52-HCM SDD-01 Hub" : v.toUpperCase() + " - 52-HCM SDD-01 Hub";
+  document.getElementById("pageTitle").textContent = v==="tongquan" ? "Tổng quan - 52-HCM SDD-01 Hub" : tabLabel(v).toUpperCase() + " - 52-HCM SDD-01 Hub";
 }
 function buildDetailTabs(){
   const el = document.getElementById("detailTabs");
   const pkTotal = computePickupTotal();
-  el.innerHTML = Object.keys(CFG.tabs).map(k=>`<button data-k="${k}" class="${k===curDetail?'active':''}">${k} (${k==='pickup' ? pkTotal.toLocaleString("vi-VN") : (DATA[k]||[]).length})</button>`).join("");
+  el.innerHTML = Object.keys(CFG.tabs).map(k=>`<button data-k="${k}" class="${k===curDetail?'active':''}">${tabLabel(k)} (${k==='pickup' ? pkTotal.toLocaleString("vi-VN") : (DATA[k]||[]).length})</button>`).join("");
   el.querySelectorAll("button").forEach(b => b.onclick = ()=>{ curDetail=b.dataset.k; detailPage.page=1; buildDetailTabs(); renderDetail(); });
 }
 
@@ -899,7 +939,15 @@ function renderPickupCustom(q) {
   totalC1 = listC1.reduce((sum, item) => sum + item.num, 0);
   totalC2 = listC2.reduce((sum, item) => sum + item.num, 0);
 
-  const maxRows = Math.max(listC1.length, listC2.length);
+  // Phan trang nhu cac tab khac (ban cu ve TOAN BO dong mot luc -> treo trinh duyet)
+  const totalRows = Math.max(listC1.length, listC2.length);
+  const pkPs = Number(detailPage.pageSize) || 200;
+  const pkTp = Math.max(1, Math.ceil(totalRows / pkPs));
+  if (detailPage.page > pkTp) detailPage.page = pkTp;
+  if (detailPage.page < 1) detailPage.page = 1;
+  const pkS = (detailPage.page - 1) * pkPs;
+  const pgC1 = listC1.slice(pkS, pkS + pkPs), pgC2 = listC2.slice(pkS, pkS + pkPs);
+  const maxRows = Math.max(pgC1.length, pgC2.length);
 
   if (maxRows === 0) {
     container.className = "";
@@ -910,8 +958,8 @@ function renderPickupCustom(q) {
 
   let tbodyHtml = "<tbody>";
   for (let i = 0; i < maxRows; i++) {
-    const r1 = listC1[i] || { kv:"", q:"", d:"", dr:"", id:"", v:"" };
-    const r2 = listC2[i] || { kv:"", q:"", d:"", dr:"", id:"", v:"" };
+    const r1 = pgC1[i] || { kv:"", q:"", d:"", dr:"", id:"", v:"" };
+    const r2 = pgC2[i] || { kv:"", q:"", d:"", dr:"", id:"", v:"" };
 
     tbodyHtml += `
       <tr style="font-size: 10.5px; height:24px;">
@@ -980,6 +1028,9 @@ function renderPickupCustom(q) {
   if (info) {
     info.textContent = `Tổng COT 1: ${totalC1.toLocaleString("vi-VN")} đơn (${listC1.length} tài xế) — Tổng COT 2: ${totalC2.toLocaleString("vi-VN")} đơn (${listC2.length} tài xế) — Tổng toàn bộ Pickup: ${(totalC1 + totalC2).toLocaleString("vi-VN")} đơn.`;
   }
+  const pkBar = buildPager(totalRows, totalRows);
+  document.getElementById("pagerTop").innerHTML = pkBar;
+  document.getElementById("pagerBot").innerHTML = pkBar;
 }
 
 function buildHangveChart(hvRows){
@@ -1055,11 +1106,59 @@ function renderHangVeCustom(rows) {
   document.getElementById("detailInfo").textContent = `Tổng WH: ${totWH.toLocaleString("vi-VN")} — Tổng MP: ${totMP.toLocaleString("vi-VN")} — Tổng cộng: ${(totWH+totMP).toLocaleString("vi-VN")} vận đơn (đếm theo Mã Vận Đơn trong tab WH/MP).`;
 }
 
+function pickCBGCols(rows){
+  if (!rows.length) return null;
+  const keys = Object.keys(rows[0]);
+  const find = (pred) => keys.find(pred);
+  const cot = find(k => normStr(k) === "cot");
+  const kv = find(k => normStr(k).includes("khu vuc"));
+  const drv = find(k => normStr(k).includes("pickup") && normStr(k).includes("driver")) || find(k => normStr(k).includes("driver"));
+  const maTX = find(k => normStr(k).includes("ma") && normStr(k).includes("tai"));
+  const order = find(k => normStr(k).includes("order") && normStr(k).includes("number"));
+  const dist = find(k => normStr(k) === "district");
+  const ptime = find(k => normStr(k).includes("pickup") && normStr(k).includes("time"));
+  if (!order) return null;
+  return { cot, kv, drv, maTX, order, dist, ptime };
+}
+function renderPickCBG(rows, q) {
+  const tbl = document.getElementById("detailTbl");
+  const info = document.getElementById("detailInfo");
+  tbl.className = "pickcbg-table";
+  document.getElementById("pagerTop").innerHTML = "";
+  document.getElementById("pagerBot").innerHTML = "";
+  const cols = pickCBGCols(rows);
+  if (!cols) {
+    tbl.innerHTML = "<tbody><tr><td>Không tìm thấy cột Order Number. Vào Cài đặt kiểm tra tên tab.</td></tr></tbody>";
+    if (info) info.textContent = "";
+    return;
+  }
+  const heads = [["cot","COT"],["kv","Khu Vực"],["drv","Pickup Driver"],["maTX","Mã Tài Xế"],["order","Order Number"],["dist","District"],["ptime","Pickup Time"]].filter(([k]) => cols[k]);
+  const isSheetErr = (v) => String(v ?? "").trim().startsWith("#");
+  let f = rows.filter(r => String(r[cols.order] ?? "").trim() !== "" && !heads.some(([k]) => isSheetErr(r[cols[k]])));
+  if (q) f = f.filter(r => heads.some(([k]) => String(r[cols[k]] ?? "").toLowerCase().includes(q)));
+  const ps = Number(detailPage.pageSize) || 200;
+  const tp = Math.max(1, Math.ceil(f.length / ps));
+  if (detailPage.page > tp) detailPage.page = tp;
+  if (detailPage.page < 1) detailPage.page = 1;
+  const s0 = (detailPage.page - 1) * ps;
+  const page = f.slice(s0, s0 + ps);
+  let html = "<thead><tr>" + heads.map(([,h]) => `<th>${h}</th>`).join("") + "</tr></thead><tbody>";
+  for (const r of page) {
+    html += "<tr>" + heads.map(([k]) => `<td>${r[cols[k]] ?? ""}</td>`).join("") + "</tr>";
+  }
+  html += "</tbody>";
+  tbl.innerHTML = html;
+  const bar = buildPager(f.length, f.length);
+  document.getElementById("pagerTop").innerHTML = bar;
+  document.getElementById("pagerBot").innerHTML = bar;
+  if (info) info.textContent = `Tổng ${f.length.toLocaleString("vi-VN")}/${rows.length.toLocaleString("vi-VN")} dòng — trang ${detailPage.page}/${tp}.`;
+}
+
 function renderDetail(){
   const rows = DATA[curDetail] || [];
   const q = (document.getElementById("detailSearch").value||"").toLowerCase();
   const f = q ? rows.filter(r=>Object.values(r).join(" ").toLowerCase().includes(q)) : rows;
-  document.getElementById("detailTitle").textContent = curDetail + " — tab " + (CFG.tabs[curDetail]||"");
+  document.getElementById("detailTitle").textContent = tabLabel(curDetail) + " — tab " + (CFG.tabs[curDetail]||"");
   
   renderBacklogPivot(f);
   renderAssignPivot(f);
@@ -1068,6 +1167,11 @@ function renderDetail(){
 
   if (curDetail === "pickup") {
     renderPickupCustom(q);
+    return;
+  }
+
+  if (curDetail === "pickchuabangiao") {
+    renderPickCBG(rows, q);
     return;
   }
 
@@ -1448,10 +1552,32 @@ function exportDetail(){
   document.body.removeChild(a);
   URL.revokeObjectURL(a.href);
 }
+function applyDash(){
+  document.body.classList.toggle("dark", !!CFG.dashMode);
+}
+function buildCfg(){
+  document.getElementById("cfgId").value = CFG.id || "";
+  const wrap = document.getElementById("cfgTabs");
+  wrap.innerHTML = Object.entries(CFG.tabs).map(([k, v]) =>
+    `<div class="cfg"><b>${tabLabel(k)}</b><input data-tab="${k}" value="${String(v).replace(/"/g, "&quot;")}"><span style="font-size:11px;color:var(--muted)">key: ${k}</span></div>`
+  ).join("") + `<div class="cfg"><b>Dash mode</b><label style="font-size:13px"><input type="checkbox" id="cfgDark" ${CFG.dashMode ? "checked" : ""} style="width:16px;height:16px;vertical-align:middle"> Nền tối</label><span></span></div>`;
+  document.getElementById("cfgMsg").textContent = "";
+}
+function saveCfg(){
+  CFG.id = document.getElementById("cfgId").value.trim() || DEFAULT_ID;
+  document.querySelectorAll("#cfgTabs input[data-tab]").forEach(inp => { CFG.tabs[inp.dataset.tab] = inp.value.trim() || CFG.tabs[inp.dataset.tab]; });
+  const dk = document.getElementById("cfgDark");
+  CFG.dashMode = dk ? dk.checked : !!CFG.dashMode;
+  localStorage.setItem("spx_hub_cfg", JSON.stringify(CFG));
+  applyDash();
+  document.getElementById("cfgMsg").textContent = "Đã lưu. Đang tải lại...";
+  loadAll(true);
+}
 function resetCfg(){
-  CFG = { id: DEFAULT_ID, tabs: {...DEFAULT_TABS} };
+  CFG = { id: DEFAULT_ID, tabs: {...DEFAULT_TABS}, dashMode: false };
   localStorage.setItem("spx_hub_cfg", JSON.stringify(CFG));
   buildCfg();
+  applyDash();
   document.getElementById("cfgMsg").textContent = "Đã reset về mặc định. Bấm Tải tất cả.";
 }
 function setupTimer(){
@@ -1460,7 +1586,7 @@ function setupTimer(){
   if (m>0) timer = setInterval(()=>loadAll(false), m*60*1000);
 }
 document.getElementById("autoRefresh").onchange = setupTimer;
-showView("tongquan"); loadAll(false);
+applyDash(); showView("tongquan"); loadAll(false);
 </script>
 </body>
 </html>
