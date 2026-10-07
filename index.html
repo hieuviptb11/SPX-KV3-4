@@ -177,7 +177,7 @@
     <button data-view="backlog">📦 Backlog <span class="cnt" id="cntBacklog">–</span></button>
     <button data-view="assign">🧾 Assign <span class="cnt" id="cntAssign">–</span></button>
     <button data-view="pickup">📥 Dí Pick <span class="cnt" id="cntPickup">–</span></button>
-    <button data-view="pickchuabangiao">📦 Pick Chưa Bàn Giao <span class="cnt" id="cntPickCBG">–</span></button>
+    <button data-view="pickchuabangiao">📦 Pickup Chưa BG <span class="cnt" id="cntPickCBG">–</span></button>
     <button data-view="hangve">🚚 Hàng đang về <span class="cnt" id="cntHangve">–</span></button>
     <button data-view="fte">🧑‍💼 Lịch FTE <span class="cnt" id="cntFte">–</span></button>
     <button data-view="rider">🛵 Lịch Rider <span class="cnt" id="cntRider">–</span></button>
@@ -302,7 +302,7 @@
 }
 const DEFAULT_ID = "1NbF60xYLto8nJf0krdJ7WYfl6H0fAJ4YG9Xyj42KuZY";
 const DEFAULT_TABS = { backlog:"Backlog", assign:"Assign", fte:"FTE", rider:"Lịch Rider", pickup:"Pickup New", pickchuabangiao:"Pick Chưa Bàn Giao", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID" };
-const TAB_LABEL = { tongquan:"Dashboard", backlog:"Backlog", assign:"Assign", fte:"Lịch FTE", rider:"Lịch Rider", pickup:"Dí Pick", pickchuabangiao:"Pick Chưa Bàn Giao", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID", cauhinh:"Cài đặt" };
+const TAB_LABEL = { tongquan:"Dashboard", backlog:"Backlog", assign:"Assign", fte:"Lịch FTE", rider:"Lịch Rider", pickup:"Dí Pick", pickchuabangiao:"Pickup Chưa BG", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID", cauhinh:"Cài đặt" };
 function tabLabel(k){ return TAB_LABEL[k] || k; }
 let CFG = loadCfg();
 let DATA = {}; let timer = null; let curDetail = "backlog"; let rosterDate = "";
@@ -1135,6 +1135,24 @@ function renderPickCBG(rows, q) {
   const heads = [["cot","COT"],["kv","Khu Vực"],["drv","Pickup Driver"],["maTX","Mã Tài Xế"],["order","Order Number"],["dist","District"],["ptime","Pickup Time"]].filter(([k]) => cols[k]);
   const isSheetErr = (v) => String(v ?? "").trim().startsWith("#");
   let f = rows.filter(r => String(r[cols.order] ?? "").trim() !== "" && !heads.some(([k]) => isSheetErr(r[cols[k]])));
+  // Bang tong hop theo rider (COT | Khu Vuc | Rider | Ma TX | Tong don)
+  const gMap = {};
+  for (const r of f){
+    const gCot = cols.cot ? String(r[cols.cot] ?? "").trim() : "";
+    const gKv = cols.kv ? String(r[cols.kv] ?? "").trim() : "";
+    const gDrv = cols.drv ? String(r[cols.drv] ?? "").trim() : "";
+    const gMa = cols.maTX ? String(r[cols.maTX] ?? "").trim() : "";
+    const gk = (gCot + "|" + gKv + "|" + gDrv.toUpperCase() + "|" + gMa).toUpperCase();
+    if (!gMap[gk]) gMap[gk] = { cot: gCot, kv: gKv, drv: gDrv || "(Trống)", ma: gMa, n: 0 };
+    gMap[gk].n++;
+  }
+  const gRows = Object.values(gMap).sort((a,b) => (a.kv||"").localeCompare(b.kv||"") || (a.cot||"").localeCompare(b.cot||"") || b.n - a.n || a.drv.localeCompare(b.drv));
+  let sumHtml = `<div class="pivot-title kv3">Tổng hợp theo Rider <span>(${gRows.length} rider • ${f.length.toLocaleString("vi-VN")} đơn)</span></div>
+  <div style="overflow:auto;max-height:300px;margin-bottom:4px"><table class="pivot"><thead><tr><th>COT</th><th>Khu Vực</th><th>Họ tên Rider</th><th>Mã Tài Xế</th><th>Tổng số đơn</th></tr></thead><tbody>`;
+  for (const s of gRows){
+    sumHtml += `<tr><td>${s.cot}</td><td>${s.kv}</td><td>${s.drv}</td><td>${s.ma}</td><td style="text-align:right"><b>${s.n.toLocaleString("vi-VN")}</b></td></tr>`;
+  }
+  sumHtml += `<tr class="grand"><td colspan="4">TỔNG CỘNG</td><td style="text-align:right"><b>${f.length.toLocaleString("vi-VN")}</b></td></tr></tbody></table></div>`;
   if (q) f = f.filter(r => heads.some(([k]) => String(r[cols[k]] ?? "").toLowerCase().includes(q)));
   const ps = Number(detailPage.pageSize) || 200;
   const tp = Math.max(1, Math.ceil(f.length / ps));
@@ -1149,7 +1167,7 @@ function renderPickCBG(rows, q) {
   html += "</tbody>";
   tbl.innerHTML = html;
   const bar = buildPager(f.length, f.length);
-  document.getElementById("pagerTop").innerHTML = bar;
+  document.getElementById("pagerTop").innerHTML = sumHtml + bar;
   document.getElementById("pagerBot").innerHTML = bar;
   if (info) info.textContent = `Tổng ${f.length.toLocaleString("vi-VN")}/${rows.length.toLocaleString("vi-VN")} dòng — trang ${detailPage.page}/${tp}.`;
 }
