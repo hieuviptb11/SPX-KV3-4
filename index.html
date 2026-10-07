@@ -1148,7 +1148,7 @@ function renderPickCBG(rows, q) {
   }
   const gRows = Object.values(gMap).sort((a,b) => (a.kv||"").localeCompare(b.kv||"") || (a.cot||"").localeCompare(b.cot||"") || b.n - a.n || a.drv.localeCompare(b.drv));
   let sumHtml = `<div class="pivot-title kv3">Tổng hợp theo Rider <span>(${gRows.length} rider • ${f.length.toLocaleString("vi-VN")} đơn)</span></div>
-  <div style="overflow:auto;max-height:300px;margin-bottom:4px"><table class="pivot"><thead><tr><th>COT</th><th>Khu Vực</th><th>Họ tên Rider</th><th>Mã Tài Xế</th><th>Tổng số đơn</th></tr></thead><tbody>`;
+  <div style="overflow:auto;max-height:300px;margin-bottom:4px"><table class="pivot"><thead><tr><th>COT</th><th>Khu Vực</th><th>Họ tên Rider</th><th>Mã Tài Xế</th><th style="text-align:right">Tổng số đơn</th></tr></thead><tbody>`;
   for (const s of gRows){
     sumHtml += `<tr><td>${s.cot}</td><td>${s.kv}</td><td>${s.drv}</td><td>${s.ma}</td><td style="text-align:right"><b>${s.n.toLocaleString("vi-VN")}</b></td></tr>`;
   }
@@ -1448,11 +1448,6 @@ function renderAssignPivot(rows){
       gt += tot;
       const safe = key.replace(/'/g,"");
       
-      html += `<tr class="qrow" onclick="asCollapsed['${safe}']=!asCollapsed['${safe}'];renderDetail()">
-        <td colspan="3">▸ <b>${qn}</b></td>
-        <td style="text-align:right"><b>${tot}</b></td>
-      </tr>`;
-      
       if (!closed){
         const sortedKeys = Object.keys(riders).sort((a,b) => riders[a].displayName.localeCompare(riders[b].displayName));
         for (const k of sortedKeys){
@@ -1464,11 +1459,11 @@ function renderAssignPivot(rows){
             <td style="text-align:right">${item.n}</td>
           </tr>`;
         }
-        html += `<tr class="sub">
-          <td colspan="3">Tổng ${qn}</td>
-          <td style="text-align:right"><b>${tot}</b></td>
-        </tr>`;
-      }
+        }
+      html += `<tr class="sub" style="cursor:pointer" onclick="asCollapsed['${safe}']=!asCollapsed['${safe}'];renderDetail()">
+        <td colspan="3">${closed?"▸":"▾"} <b>Tổng ${qn}</b></td>
+        <td style="text-align:right"><b>${tot}</b></td>
+      </tr>`;
     }
     
     html += `<tr class="grand">
@@ -1514,20 +1509,21 @@ function bpTable(tblId, totId, rows, tag){
   let html = `<tr><th style="text-align:left">Quận / Phường</th>`+colVals.map(c=>`<th>${c}</th>`).join("")+`<th>Tổng</th></tr>`;
   const grand = {}; colVals.forEach(c=>grand[c]=0);
   for (const qn of quans){
-    const key = tag+"|"+qn, closed = !!bpCollapsed[key];
+    const closed = !!bpCollapsed[tag+"|"+qn];
+    const safe = (tag+"|"+qn).replace(/'/g,"");
     const mQ = bpCount(data, pc.quan, pc.phuong, pc.cot, colVals, qn);
     const tQ = colVals.reduce((s,c)=>s+mQ[c],0);
     colVals.forEach(c=>grand[c]+=mQ[c]);
-    html += `<tr class="qrow" onclick="bpCollapsed['${tag}|${qn.replace(/'/g,"")}']=!bpCollapsed['${tag}|${qn.replace(/'/g,"")}'];renderDetail()"><td>▸ <b>${qn}</b></td>`+colVals.map(c=>`<td class="num"><b>${mQ[c]||""}</b></td>`).join("")+`<td class="num"><b>${tQ}</b></td></tr>`;
     if (!closed && pc.phuong){
       const phs = [...new Set(data.filter(r=>(String(r[pc.quan]??"").trim()||"(Trống)")===qn).map(r=>String(r[pc.phuong]??"").trim()||"(Trống)"))].sort();
       for (const ph of phs){
         const m = bpCount(data, pc.quan, pc.phuong, pc.cot, colVals, qn, ph);
         const t = colVals.reduce((s,c)=>s+m[c],0);
-        html += `<tr><td style="padding-left:20px">${ph}</td>`+colVals.map(c=>`<td class="num">${m[c]||""}</td>`).join("")+`<td class="num"><b>${t||""}</b></td></tr>`;
+        const tCell = t > 30 ? `<b class="text-red">${t}</b>` : (t || "");
+        html += `<tr><td style="padding-left:20px">${ph}</td>`+colVals.map(c=>`<td class="num">${m[c]||""}</td>`).join("")+`<td class="num">${tCell}</td></tr>`;
       }
-      html += `<tr class="sub"><td style="padding-left:12px">Tổng ${qn}</td>`+colVals.map(c=>`<td class="num"><b>${mQ[c]||""}</b></td>`).join("")+`<td class="num"><b>${tQ}</b></td></tr>`;
     }
+    html += `<tr class="sub" style="cursor:pointer" onclick="bpCollapsed['${safe}']=!bpCollapsed['${safe}'];renderDetail()"><td style="padding-left:12px">${closed?"▸":"▾"} <b>Tổng ${qn}</b></td>`+colVals.map(c=>`<td class="num"><b>${mQ[c]||""}</b></td>`).join("")+`<td class="num"><b>${tQ}</b></td></tr>`;
   }
   const gt = colVals.reduce((s,c)=>s+grand[c],0);
   html += `<tr class="grand"><td>Tổng ${tag}</td>`+colVals.map(c=>`<td class="num">${grand[c]||""}</td>`).join("")+`<td class="num">${gt}</td></tr>`;
