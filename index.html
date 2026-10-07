@@ -813,7 +813,7 @@ function renderFteCustom(rows, q) {
   const nameCol = rosterNameCol(rows);
   let filterRows = rows;
   if (q) {
-    filterRows = rows.filter(r => Object.values(r).join(" ").toLowerCase().includes(q));
+    filterRows = rows.filter(r => normStr(Object.values(r).join(" ")).includes(normStr(q)));
   }
 
   const onList = [];
@@ -1153,7 +1153,7 @@ function renderPickCBG(rows, q) {
     sumHtml += `<tr><td>${s.cot}</td><td>${s.kv}</td><td>${s.drv}</td><td>${s.ma}</td><td style="text-align:right"><b>${s.n.toLocaleString("vi-VN")}</b></td></tr>`;
   }
   sumHtml += `<tr class="grand"><td colspan="4">TỔNG CỘNG</td><td style="text-align:right"><b>${f.length.toLocaleString("vi-VN")}</b></td></tr></tbody></table></div>`;
-  if (q) f = f.filter(r => heads.some(([k]) => String(r[cols[k]] ?? "").toLowerCase().includes(q)));
+  if (q) f = f.filter(r => heads.some(([k]) => normStr(r[cols[k]] ?? "").includes(normStr(q))));
   const ps = Number(detailPage.pageSize) || 200;
   const tp = Math.max(1, Math.ceil(f.length / ps));
   if (detailPage.page > tp) detailPage.page = tp;
@@ -1175,7 +1175,13 @@ function renderPickCBG(rows, q) {
 function renderDetail(){
   const rows = DATA[curDetail] || [];
   const q = (document.getElementById("detailSearch").value||"").toLowerCase();
-  const f = q ? rows.filter(r=>Object.values(r).join(" ").toLowerCase().includes(q)) : rows;
+  // Tach hang tieu de phu (vd: hang ngay 05/10...) TRUOC khi loc.
+  // Ban cu loc truoc roi moi slice(1) -> cat nham dong du lieu dau tien khop filter.
+  const k0 = rows.length ? Object.keys(rows[0]) : [];
+  const hasSub0 = rows.length > 0 && k0.some(k => /^\d{1,2}\/\d{1,2}/.test(String(rows[0][k] ?? "").trim()));
+  const baseRows = hasSub0 ? rows.slice(1) : rows;
+  const nq = normStr(q);
+  const f = q ? baseRows.filter(r=>normStr(Object.values(r).join(" ")).includes(nq)) : baseRows;
   document.getElementById("detailTitle").textContent = tabLabel(curDetail) + " — tab " + (CFG.tabs[curDetail]||"");
   
   renderBacklogPivot(f);
@@ -1264,7 +1270,7 @@ function renderDetail(){
   }
   theadHtml += "</thead>";
 
-  const displayDataAll = hasSubHeaderRow ? f.slice(1) : f;
+  const displayDataAll = f;
   if (detailPage.pageSize === 0) detailPage.pageSize = 200;
   const totalRowsAll = displayDataAll.length;
   const totalPages = Math.max(1, Math.ceil(totalRowsAll / detailPage.pageSize));
