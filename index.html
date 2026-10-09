@@ -255,7 +255,7 @@
         <div id="assignPanes"></div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-        <input id="detailSearch" placeholder="🔍 Lọc nhanh..." oninput="detailPage.page=1;renderDetail()" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid #cbd5e1">
+        <input id="detailSearch" placeholder="🔍 Lọc nhanh..." oninput="detailPage.page=1;pickRawPage=1;renderDetail()" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid #cbd5e1">
         <button onclick="exportDetail()" style="padding:8px 12px;border-radius:8px;border:1px solid #cbd5e1;background:#fff">⬇ CSV</button>
       </div>
       <div id="pagerTop"></div>
@@ -301,8 +301,8 @@
   return total;
 }
 const DEFAULT_ID = "1NbF60xYLto8nJf0krdJ7WYfl6H0fAJ4YG9Xyj42KuZY";
-const DEFAULT_TABS = { backlog:"Backlog", assign:"Assign", fte:"FTE", rider:"Lịch Rider", pickup:"Pickup New", pickchuabangiao:"Pick Chưa Bàn Giao", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID" };
-const TAB_LABEL = { tongquan:"Dashboard", backlog:"Backlog", assign:"Assign", fte:"Lịch FTE", rider:"Lịch Rider", pickup:"Dí Pick", pickchuabangiao:"Pickup Chưa BG", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID", cauhinh:"Cài đặt" };
+const DEFAULT_TABS = { backlog:"Backlog", assign:"Assign", fte:"FTE", rider:"Lịch Rider", pickup:"Pickup New", api5:"API 5", pickchuabangiao:"Pick Chưa Bàn Giao", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID" };
+const TAB_LABEL = { tongquan:"Dashboard", backlog:"Backlog", assign:"Assign", fte:"Lịch FTE", rider:"Lịch Rider", pickup:"Dí Pick", api5:"API 5", pickchuabangiao:"Pickup Chưa BG", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID", cauhinh:"Cài đặt" };
 function tabLabel(k){ return TAB_LABEL[k] || k; }
 let CFG = loadCfg();
 let DATA = {}; let timer = null; let curDetail = "backlog"; let rosterDate = "";
@@ -315,6 +315,7 @@ function loadCfg(){
       if (c.tabs.fte === "Lịch FTE") c.tabs.fte = "FTE";
       if (c.tabs.rider === "Rider" || !c.tabs.rider) c.tabs.rider = "Lịch Rider";
       if (c.tabs.hangve === "COT1 lấy hàng buổi sáng") c.tabs.hangve = "Hàng đang về";
+      if (c.tabs.pickup === "API 5") c.tabs.pickup = "Pickup New";
       return c;
     }
   } catch(e){}
@@ -564,6 +565,7 @@ async function loadAll(manual){
     });
   jobs.push(
     fetchViaJsonp2D(CFG.id, CFG.tabs.pickup).then(v => { DATA.pickupRaw = v; DATA.pickup = v; }).catch(() => { DATA.pickupRaw = []; DATA.pickup = []; fails.push(CFG.tabs.pickup); }),
+    fetchViaJsonp2D(CFG.id, CFG.tabs.api5 || "API 5").then(v => { DATA.api5Raw = v; }).catch(() => { DATA.api5Raw = []; fails.push(CFG.tabs.api5 || "API 5"); }),
     fetchViaJsonp2D(CFG.id, CFG.tabs.hangve).then(v => { DATA.hangveRaw = v; DATA.hangve = v; }).catch(() => { DATA.hangveRaw = []; DATA.hangve = []; fails.push(CFG.tabs.hangve); })
   );
   await Promise.all(jobs);
@@ -573,6 +575,12 @@ async function loadAll(manual){
       const cEl = document.getElementById(eid);
       if (cEl) cEl.textContent = (DATA[k]||[]).length;
     }
+  }
+  // So tab Pickup Chua BG = so dong SACH (bo #N/A) = dung so TONG CONG
+  DATA.pickcbTotal = pickCBGTotal();
+  {
+    const cpc = document.getElementById("cntPickCBG");
+    if (cpc) cpc.textContent = (DATA.pickcbTotal ?? 0).toLocaleString("vi-VN");
   }
   if (fails.length) window.__loadFails = fails;
 
@@ -791,15 +799,15 @@ function showView(v){
   document.getElementById("view-tongquan").style.display = v==="tongquan" ? "" : "none";
   document.getElementById("view-cauhinh").style.display = v==="cauhinh" ? "" : "none";
   document.getElementById("view-detail").style.display = (v!=="tongquan" && v!=="cauhinh") ? "" : "none";
-  if (v!=="tongquan" && v!=="cauhinh"){ curDetail = v; detailPage.page=1; buildDetailTabs(); renderDetail(); }
+  if (v!=="tongquan" && v!=="cauhinh"){ curDetail = v; detailPage.page=1; pickRawPage=1; buildDetailTabs(); renderDetail(); }
   if (v==="cauhinh") buildCfg();
   document.getElementById("pageTitle").textContent = v==="tongquan" ? "Tổng quan - 52-HCM SDD-01 Hub" : tabLabel(v).toUpperCase() + " - 52-HCM SDD-01 Hub";
 }
 function buildDetailTabs(){
   const el = document.getElementById("detailTabs");
   const pkTotal = computePickupTotal();
-  el.innerHTML = Object.keys(CFG.tabs).map(k=>`<button data-k="${k}" class="${k===curDetail?'active':''}">${tabLabel(k)} (${k==='pickup' ? pkTotal.toLocaleString("vi-VN") : (DATA[k]||[]).length})</button>`).join("");
-  el.querySelectorAll("button").forEach(b => b.onclick = ()=>{ curDetail=b.dataset.k; detailPage.page=1; buildDetailTabs(); renderDetail(); });
+  el.innerHTML = Object.keys(CFG.tabs).filter(k=>k!=="api5").map(k=>`<button data-k="${k}" class="${k===curDetail?'active':''}">${tabLabel(k)} (${k==='pickup' ? pkTotal.toLocaleString("vi-VN") : (k==='pickchuabangiao' ? (DATA.pickcbTotal ?? (DATA[k]||[]).length).toLocaleString("vi-VN") : (DATA[k]||[]).length)})</button>`).join("");
+  el.querySelectorAll("button").forEach(b => b.onclick = ()=>{ curDetail=b.dataset.k; detailPage.page=1; pickRawPage=1; buildDetailTabs(); renderDetail(); });
 }
 
 function renderFteCustom(rows, q) {
@@ -878,68 +886,75 @@ function renderFteCustom(rows, q) {
 }
 
 /* XỬ LÝ TAB PICKUP NEW - ĐẢM BẢO HIỂN THỊ ĐỦ DỮ LIỆU CẢ 2 BẢNG SẠCH SẼ */
-function renderPickupCustom(q) {
-  const container = document.getElementById("detailTbl");
-  const info = document.getElementById("detailInfo");
-  container.className = "pk-table";
-
-  const rawArrs = DATA.pickupRaw || [];
-
-  if (!rawArrs || rawArrs.length <= 1) {
-    container.className = "";
-    container.innerHTML = "<tbody><tr><td style='padding:12px;color:var(--muted)'>Chưa tải được dữ liệu tab Pickup. Hãy bấm Refresh/Tải tất cả.</td></tr></tbody>";
-    if (info) info.textContent = "";
-    return;
+/* Bang du lieu tho tab Di Pick: lay dung 9 cot AD,AB,AC,Z,AA,A,C,K,S (theo dung thu tu)
+   tu sheet API 5, loc bo hang chua #N/A. */
+const PICKUP_COLS = [29, 27, 28, 25, 26, 0, 2, 10, 18];
+function pickupTable(){
+  const raw = DATA.api5Raw || [];
+  if (!raw || raw.length < 2) return { heads: [], rows: [] };
+  let hi = 0;
+  for (let i = 0; i < Math.min(raw.length, 5); i++){
+    if ((raw[i] || []).join(" ").toLowerCase().includes("order number")) { hi = i; break; }
   }
-
+  const heads = PICKUP_COLS.map(ci => String((raw[hi] || [])[ci] ?? "").trim() || ("Cột " + ci));
+  const isErr = (v) => String(v ?? "").trim().startsWith("#");
+  const rows = [];
+  for (let i = hi + 1; i < raw.length; i++){
+    const r = raw[i] || [];
+    if (r.every(c => String(c ?? "").trim() === "")) continue;
+    if (r.some(isErr)) continue;
+    if (Number(String(r[15] ?? "").trim()) !== 0) continue; // Cot P (pickup attempts) phai = 0
+    rows.push(PICKUP_COLS.map(ci => r[ci] ?? ""));
+  }
+  // Sap xep theo thu tu cot: COT > Khu vuc > Quan > ... (COT 1 truoc, COT 2 sau)
+  rows.sort((a, b) => {
+    for (let i = 0; i < a.length; i++){
+      const d = String(a[i] ?? "").localeCompare(String(b[i] ?? ""), "vi", { numeric: true });
+      if (d) return d;
+    }
+    return 0;
+  });
+  return { heads, rows };
+}
+/* Bang tong hop PICKUP COT 1 / COT 2 (sheet Pickup New) - nam tren bang tho API 5 */
+function pickupSummary(q){
+  const rawArrs = DATA.pickupRaw || [];
+  if (!rawArrs || rawArrs.length <= 1) return { html: "", info: "", bar: "" };
   let startIdx = rawArrs.findIndex(r => Array.isArray(r) && r.some(cell => {
     const n = normStr(cell);
     return n.includes("khu vuc") || n.includes("driver") || n.includes("district");
   }));
   if (startIdx < 0) startIdx = 0;
-
   let listC1 = [], listC2 = [];
-  let totalC1 = 0, totalC2 = 0;
-
   for (let i = startIdx + 1; i < rawArrs.length; i++) {
     const r = rawArrs[i] || [];
-
-    // Bảng 1: COT 1 (Cột A..F)
     const c1_kv = String(r[0] ?? "").trim();
     const c1_q  = String(r[1] ?? "").trim();
     const c1_d  = String(r[2] ?? "").trim();
     const c1_dr = String(r[3] ?? "").trim();
     const c1_id = String(r[4] ?? "").trim();
     const c1_v  = String(r[5] ?? "").trim();
-
-    // Bảng 2: COT 2 (Cột H..M)
     const c2_kv = String(r[7] ?? "").trim();
     const c2_q  = String(r[8] ?? "").trim();
     const c2_d  = String(r[9] ?? "").trim();
     const c2_dr = String(r[10] ?? "").trim();
     const c2_id = String(r[11] ?? "").trim();
     const c2_v  = String(r[12] ?? "").trim();
-
     if (c1_dr || c1_kv || c1_v) {
       const num1 = parseInt(c1_v.replace(/[^\d]/g, ""), 10) || 0;
       listC1.push({ kv: c1_kv, q: c1_q, d: c1_d, dr: c1_dr, id: c1_id, v: c1_v, num: num1 });
     }
-
     if (c2_dr || c2_kv || c2_v) {
       const num2 = parseInt(c2_v.replace(/[^\d]/g, ""), 10) || 0;
       listC2.push({ kv: c2_kv, q: c2_q, d: c2_d, dr: c2_dr, id: c2_id, v: c2_v, num: num2 });
     }
   }
-
   if (q) {
     listC1 = listC1.filter(item => Object.values(item).join(" ").toLowerCase().includes(q));
     listC2 = listC2.filter(item => Object.values(item).join(" ").toLowerCase().includes(q));
   }
-
-  totalC1 = listC1.reduce((sum, item) => sum + item.num, 0);
-  totalC2 = listC2.reduce((sum, item) => sum + item.num, 0);
-
-  // Phan trang nhu cac tab khac (ban cu ve TOAN BO dong mot luc -> treo trinh duyet)
+  const totalC1 = listC1.reduce((sum, item) => sum + item.num, 0);
+  const totalC2 = listC2.reduce((sum, item) => sum + item.num, 0);
   const totalRows = Math.max(listC1.length, listC2.length);
   const pkPs = Number(detailPage.pageSize) || 200;
   const pkTp = Math.max(1, Math.ceil(totalRows / pkPs));
@@ -948,19 +963,12 @@ function renderPickupCustom(q) {
   const pkS = (detailPage.page - 1) * pkPs;
   const pgC1 = listC1.slice(pkS, pkS + pkPs), pgC2 = listC2.slice(pkS, pkS + pkPs);
   const maxRows = Math.max(pgC1.length, pgC2.length);
-
-  if (maxRows === 0) {
-    container.className = "";
-    container.innerHTML = "<tbody><tr><td style='padding:12px;color:var(--muted)'>Không có dữ liệu phù hợp.</td></tr></tbody>";
-    if (info) info.textContent = "";
-    return;
-  }
+  if (maxRows === 0) return { html: "", info: "", bar: "" };
 
   let tbodyHtml = "<tbody>";
   for (let i = 0; i < maxRows; i++) {
     const r1 = pgC1[i] || { kv:"", q:"", d:"", dr:"", id:"", v:"" };
     const r2 = pgC2[i] || { kv:"", q:"", d:"", dr:"", id:"", v:"" };
-
     tbodyHtml += `
       <tr style="font-size: 10.5px; height:24px;">
         <td style="padding:3px 4px; text-align:center;">${r1.kv}</td>
@@ -983,19 +991,19 @@ function renderPickupCustom(q) {
 
   const colGroupHtml = `
     <colgroup>
-      <col style="width: 4%">    <!-- KV 1 -->
-      <col style="width: 8.5%">  <!-- Quận 1 -->
-      <col style="width: 9.5%">  <!-- District 1 (Thu nhỏ) -->
-      <col style="width: 17%">   <!-- Driver 1 -->
-      <col style="width: 5.5%">  <!-- ID 1 -->
-      <col style="width: 5%">    <!-- COT 1 (Tăng độ rộng gấp đôi) -->
-      <col style="width: 1%">    <!-- Vạch phân cách -->
-      <col style="width: 4%">    <!-- KV 2 -->
-      <col style="width: 8.5%">  <!-- Quận 2 -->
-      <col style="width: 9.5%">  <!-- District 2 (Thu nhỏ) -->
-      <col style="width: 17%">   <!-- Driver 2 -->
-      <col style="width: 5.5%">  <!-- ID 2 -->
-      <col style="width: 5%">    <!-- COT 2 (Tăng độ rộng gấp đôi) -->
+      <col style="width: 4%">
+      <col style="width: 8.5%">
+      <col style="width: 9.5%">
+      <col style="width: 17%">
+      <col style="width: 5.5%">
+      <col style="width: 5%">
+      <col style="width: 1%">
+      <col style="width: 4%">
+      <col style="width: 8.5%">
+      <col style="width: 9.5%">
+      <col style="width: 17%">
+      <col style="width: 5.5%">
+      <col style="width: 5%">
     </colgroup>
   `;
 
@@ -1024,13 +1032,60 @@ function renderPickupCustom(q) {
     </thead>
   `;
 
-  container.innerHTML = `<table style="table-layout:fixed; width:100%; border-collapse:collapse;">${colGroupHtml}${theadHtml}${tbodyHtml}</table>`;
-  if (info) {
-    info.textContent = `Tổng COT 1: ${totalC1.toLocaleString("vi-VN")} đơn (${listC1.length} tài xế) — Tổng COT 2: ${totalC2.toLocaleString("vi-VN")} đơn (${listC2.length} tài xế) — Tổng toàn bộ Pickup: ${(totalC1 + totalC2).toLocaleString("vi-VN")} đơn.`;
+  const html = `<table style="table-layout:fixed; width:100%; border-collapse:collapse;">${colGroupHtml}${theadHtml}${tbodyHtml}</table>`;
+  const info = `Tổng COT 1: ${totalC1.toLocaleString("vi-VN")} đơn (${listC1.length} tài xế) — Tổng COT 2: ${totalC2.toLocaleString("vi-VN")} đơn (${listC2.length} tài xế) — Tổng toàn bộ Pickup: ${(totalC1 + totalC2).toLocaleString("vi-VN")} đơn.`;
+  const bar = buildPager(totalRows, totalRows);
+  return { html, info, bar };
+}
+function renderPickupCustom(q) {
+  const container = document.getElementById("detailTbl");
+  const info = document.getElementById("detailInfo");
+  container.className = "";
+
+  const nq = normStr(q || "");
+  const tab = pickupTable();
+  const list = nq ? tab.rows.filter(cells => normStr(cells.join(" ")).includes(nq)) : tab.rows;
+
+  const totalRows = list.length;
+  const pkPs = Number(detailPage.pageSize) || 200;
+  const pkTp = Math.max(1, Math.ceil(totalRows / pkPs));
+  if (pickRawPage > pkTp) pickRawPage = pkTp;
+  if (pickRawPage < 1) pickRawPage = 1;
+  const pkS = (pickRawPage - 1) * pkPs;
+  const page = list.slice(pkS, pkS + pkPs);
+  const maxRows = page.length;
+
+  const sum = pickupSummary(q);
+  let rawSectionHtml = "";
+  if (tab.heads.length && maxRows > 0) {
+    let rawRowsHtml = "<tbody>";
+    for (let i = 0; i < maxRows; i++) {
+      const cells = page[i];
+      rawRowsHtml += `<tr>${cells.map(c => `<td>${c ?? ""}</td>`).join("")}</tr>`;
+    }
+    rawRowsHtml += "</tbody>";
+    const rawTheadHtml = `<thead><tr>${tab.heads.map(h => `<th>${h}</th>`).join("")}</tr></thead>`;
+    rawSectionHtml = `
+    <div class="pivot-title kv4" style="margin-top:14px">Bảng dữ liệu thô — API 5 <span>(${list.length.toLocaleString("vi-VN")}/${tab.rows.length.toLocaleString("vi-VN")} dòng)</span></div>
+    <div class="pg-bar"><span class="pg-info">Trang <b>${pickRawPage}</b> / <b>${pkTp}</b> — Hiển thị <b>${(pkS+1).toLocaleString("vi-VN")}–${Math.min(pkS+pkPs, list.length).toLocaleString("vi-VN")}</b> / <b>${list.length.toLocaleString("vi-VN")}</b> dòng</span>
+      <button type="button" onclick="pickRawPage--;renderDetail()" ${pickRawPage<=1?'disabled':''}>‹ Trước</button>
+      <button type="button" onclick="pickRawPage++;renderDetail()" ${pickRawPage>=pkTp?'disabled':''}>Sau ›</button>
+    </div>
+    <div style="overflow:auto;max-height:420px"><table style="width:100%;border-collapse:collapse">${rawTheadHtml}${rawRowsHtml}</table></div>`;
   }
-  const pkBar = buildPager(totalRows, totalRows);
-  document.getElementById("pagerTop").innerHTML = pkBar;
-  document.getElementById("pagerBot").innerHTML = pkBar;
+  if (!sum.html && !rawSectionHtml) {
+    container.innerHTML = "<tbody><tr><td style='padding:12px;color:var(--muted)'>Chưa có dữ liệu Dí Pick. Hãy bấm Refresh/Tải tất cả.</td></tr></tbody>";
+    if (info) info.textContent = "";
+    document.getElementById("pagerTop").innerHTML = "";
+    document.getElementById("pagerBot").innerHTML = "";
+    return;
+  }
+  container.innerHTML = `<tbody><tr><td style="padding:0;border:none">${sum.html}${rawSectionHtml}</td></tr></tbody>`;
+  if (info) {
+    info.textContent = (sum.info ? sum.info + " " : "") + `Bảng thô API 5: ${tab.rows.length.toLocaleString("vi-VN")} dòng (đã lọc #N/A, attempts = 0).`;
+  }
+  document.getElementById("pagerTop").innerHTML = sum.bar;
+  document.getElementById("pagerBot").innerHTML = sum.bar;
 }
 
 function buildHangveChart(hvRows){
@@ -1120,21 +1175,34 @@ function pickCBGCols(rows){
   if (!order) return null;
   return { cot, kv, drv, maTX, order, dist, ptime };
 }
+function pickCBGClean(rows){
+  const cols = pickCBGCols(rows);
+  if (!cols) return { cols: null, heads: [], rows: [] };
+  const heads = [["cot","COT"],["kv","Khu Vực"],["drv","Pickup Driver"],["maTX","Mã Tài Xế"],["order","Order Number"],["dist","District"],["ptime","Pickup Time"]].filter(([k]) => cols[k]);
+  const isErr = (v) => String(v ?? "").trim().startsWith("#");
+  const clean = rows.filter(r => String(r[cols.order] ?? "").trim() !== "" && !heads.some(([k]) => isErr(r[cols[k]])));
+  return { cols, heads, rows: clean };
+}
+function pickCBGTotal(){
+  try { return pickCBGClean(DATA.pickchuabangiao || []).rows.length; }
+  catch(e){ return (DATA.pickchuabangiao || []).length; }
+}
 function renderPickCBG(rows, q) {
   const tbl = document.getElementById("detailTbl");
   const info = document.getElementById("detailInfo");
   tbl.className = "pickcbg-table";
   document.getElementById("pagerTop").innerHTML = "";
   document.getElementById("pagerBot").innerHTML = "";
-  const cols = pickCBGCols(rows);
+  const got = pickCBGClean(rows);
+  const cols = got.cols, heads = got.heads;
   if (!cols) {
     tbl.innerHTML = "<tbody><tr><td>Không tìm thấy cột Order Number. Vào Cài đặt kiểm tra tên tab.</td></tr></tbody>";
     if (info) info.textContent = "";
     return;
   }
-  const heads = [["cot","COT"],["kv","Khu Vực"],["drv","Pickup Driver"],["maTX","Mã Tài Xế"],["order","Order Number"],["dist","District"],["ptime","Pickup Time"]].filter(([k]) => cols[k]);
-  const isSheetErr = (v) => String(v ?? "").trim().startsWith("#");
-  let f = rows.filter(r => String(r[cols.order] ?? "").trim() !== "" && !heads.some(([k]) => isSheetErr(r[cols[k]])));
+  // heads + loc sach lay tu pickCBGClean (so dem chuan cho sidebar)
+  const nq = normStr(q || "");
+  let f = nq ? got.rows.filter(r => heads.some(([k]) => normStr(r[cols[k]] ?? "").includes(nq))) : got.rows;
   // Bang tong hop theo rider (COT | Khu Vuc | Rider | Ma TX | Tong don)
   const gMap = {};
   for (const r of f){
@@ -1148,12 +1216,12 @@ function renderPickCBG(rows, q) {
   }
   const gRows = Object.values(gMap).sort((a,b) => (a.kv||"").localeCompare(b.kv||"") || (a.cot||"").localeCompare(b.cot||"") || b.n - a.n || a.drv.localeCompare(b.drv));
   let sumHtml = `<div class="pivot-title kv3">Tổng hợp theo Rider <span>(${gRows.length} rider • ${f.length.toLocaleString("vi-VN")} đơn)</span></div>
-  <div style="overflow:auto;max-height:300px;margin-bottom:4px"><table class="pivot"><thead><tr><th>COT</th><th>Khu Vực</th><th>Họ tên Rider</th><th>Mã Tài Xế</th><th style="text-align:right">Tổng số đơn</th></tr></thead><tbody>`;
+  <div style="overflow:auto;max-height:300px;margin-bottom:4px"><table class="pivot"><colgroup><col style="width:14%"><col style="width:16%"><col style="width:34%"><col style="width:20%"><col style="width:16%"></colgroup><thead><tr><th>COT</th><th>Khu Vực</th><th>Họ tên Rider</th><th>Mã Tài Xế</th><th style="text-align:right">Tổng số đơn</th></tr></thead><tbody>`;
   for (const s of gRows){
     sumHtml += `<tr><td>${s.cot}</td><td>${s.kv}</td><td>${s.drv}</td><td>${s.ma}</td><td style="text-align:right"><b>${s.n.toLocaleString("vi-VN")}</b></td></tr>`;
   }
   sumHtml += `<tr class="grand"><td colspan="4">TỔNG CỘNG</td><td style="text-align:right"><b>${f.length.toLocaleString("vi-VN")}</b></td></tr></tbody></table></div>`;
-  if (q) f = f.filter(r => heads.some(([k]) => normStr(r[cols[k]] ?? "").includes(normStr(q))));
+  // (loc search da chay o tren, truoc khi tong hop)
   const ps = Number(detailPage.pageSize) || 200;
   const tp = Math.max(1, Math.ceil(f.length / ps));
   if (detailPage.page > tp) detailPage.page = tp;
@@ -1316,6 +1384,7 @@ function renderDetail(){
 }
 
 let detailPage = { page: 1, pageSize: 200, _total: 0, _pages: 1 };
+let pickRawPage = 1;
 function buildPager(totalRows, filteredRows){
   const ps = Number(detailPage.pageSize) || 200;
   const tp = Math.max(1, Math.ceil((totalRows||0) / ps));
@@ -1367,6 +1436,7 @@ document.addEventListener("change", function(e){
   if (e.target && e.target.id === "pgSize"){
     detailPage.pageSize = +e.target.value || 200;
     detailPage.page = 1;
+    pickRawPage = 1;
     renderDetail();
   }
   if (e.target && e.target.id === "pgInput"){
