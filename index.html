@@ -178,6 +178,7 @@
     <button data-view="assign">🧾 Assign <span class="cnt" id="cntAssign">–</span></button>
     <button data-view="pickup">📥 Dí Pick <span class="cnt" id="cntPickup">–</span></button>
     <button data-view="pickchuabangiao">📦 Pickup Chưa BG <span class="cnt" id="cntPickCBG">–</span></button>
+    <button data-view="hanghv">💎 Hàng HV <span class="cnt" id="cntHanghv">–</span></button>
     <button data-view="hangve">🚚 Hàng đang về <span class="cnt" id="cntHangve">–</span></button>
     <button data-view="fte">🧑‍💼 Lịch FTE <span class="cnt" id="cntFte">–</span></button>
     <button data-view="rider">🛵 Lịch Rider <span class="cnt" id="cntRider">–</span></button>
@@ -301,8 +302,8 @@
   return total;
 }
 const DEFAULT_ID = "1NbF60xYLto8nJf0krdJ7WYfl6H0fAJ4YG9Xyj42KuZY";
-const DEFAULT_TABS = { backlog:"Backlog", assign:"Assign", fte:"FTE", rider:"Lịch Rider", pickup:"Pickup New", api5:"API 5", pickchuabangiao:"Pick Chưa Bàn Giao", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID" };
-const TAB_LABEL = { tongquan:"Dashboard", backlog:"Backlog", assign:"Assign", fte:"Lịch FTE", rider:"Lịch Rider", pickup:"Dí Pick", api5:"API 5", pickchuabangiao:"Pickup Chưa BG", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID", cauhinh:"Cài đặt" };
+const DEFAULT_TABS = { backlog:"Backlog", assign:"Assign", fte:"FTE", rider:"Lịch Rider", pickup:"Pickup New", api5:"API 5", pickchuabangiao:"Pick Chưa Bàn Giao", hanghv:"Hàng HV", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID" };
+const TAB_LABEL = { tongquan:"Dashboard", backlog:"Backlog", assign:"Assign", fte:"Lịch FTE", rider:"Lịch Rider", pickup:"Dí Pick", api5:"API 5", pickchuabangiao:"Pickup Chưa BG", hanghv:"Hàng HV", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID", cauhinh:"Cài đặt" };
 function tabLabel(k){ return TAB_LABEL[k] || k; }
 let CFG = loadCfg();
 let DATA = {}; let timer = null; let curDetail = "backlog"; let rosterDate = "";
@@ -558,7 +559,7 @@ async function loadAll(manual){
   // Pickup & Hang ve chi dung ban raw 2D de ve -> bo qua ban parsed cho nhe.
   const fails = [];
   const jobs = Object.entries(CFG.tabs)
-    .filter(([key]) => key !== "pickup" && key !== "hangve")
+    .filter(([key]) => key !== "pickup" && key !== "hangve" && key !== "hanghv")
     .map(async ([key, tab]) => {
       try { DATA[key] = await fetchOneTab(CFG.id, tab, key); }
       catch(e) { DATA[key] = []; fails.push(tab); }
@@ -566,11 +567,12 @@ async function loadAll(manual){
   jobs.push(
     fetchViaJsonp2D(CFG.id, CFG.tabs.pickup).then(v => { DATA.pickupRaw = v; DATA.pickup = v; }).catch(() => { DATA.pickupRaw = []; DATA.pickup = []; fails.push(CFG.tabs.pickup); }),
     fetchViaJsonp2D(CFG.id, CFG.tabs.api5 || "API 5").then(v => { DATA.api5Raw = v; }).catch(() => { DATA.api5Raw = []; fails.push(CFG.tabs.api5 || "API 5"); }),
-    fetchViaJsonp2D(CFG.id, CFG.tabs.hangve).then(v => { DATA.hangveRaw = v; DATA.hangve = v; }).catch(() => { DATA.hangveRaw = []; DATA.hangve = []; fails.push(CFG.tabs.hangve); })
+    fetchViaJsonp2D(CFG.id, CFG.tabs.hangve).then(v => { DATA.hangveRaw = v; DATA.hangve = v; }).catch(() => { DATA.hangveRaw = []; DATA.hangve = []; fails.push(CFG.tabs.hangve); }),
+    fetchViaJsonp2D(CFG.id, CFG.tabs.hanghv || "Hàng HV").then(v => { DATA.hanghvRaw = v; DATA.hanghv = v; }).catch(() => { DATA.hanghvRaw = []; DATA.hanghv = []; fails.push(CFG.tabs.hanghv || "Hàng HV"); })
   );
   await Promise.all(jobs);
   {
-    const cntMap = {backlog:"cntBacklog",assign:"cntAssign",fte:"cntFte",rider:"cntRider",pickchuabangiao:"cntPickCBG",hangve:"cntHangve"};
+    const cntMap = {backlog:"cntBacklog",assign:"cntAssign",fte:"cntFte",rider:"cntRider",pickchuabangiao:"cntPickCBG",hanghv:"cntHanghv",hangve:"cntHangve"};
     for (const [k, eid] of Object.entries(cntMap)){
       const cEl = document.getElementById(eid);
       if (cEl) cEl.textContent = (DATA[k]||[]).length;
@@ -581,6 +583,11 @@ async function loadAll(manual){
   {
     const cpc = document.getElementById("cntPickCBG");
     if (cpc) cpc.textContent = (DATA.pickcbTotal ?? 0).toLocaleString("vi-VN");
+  }
+  try { DATA.hanghvTotal = hanghvTable().rows.length; } catch(e){ DATA.hanghvTotal = 0; }
+  {
+    const chv = document.getElementById("cntHanghv");
+    if (chv) chv.textContent = (DATA.hanghvTotal ?? 0).toLocaleString("vi-VN");
   }
   if (fails.length) window.__loadFails = fails;
 
@@ -789,7 +796,7 @@ function renderOverview(now){
   }
 }
 
-const views = ["tongquan","backlog","assign","pickup","pickchuabangiao","hangve","fte","rider","cauhinh"];
+const views = ["tongquan","backlog","assign","pickup","pickchuabangiao","hanghv","hangve","fte","rider","cauhinh"];
 document.querySelectorAll("#sideNav button").forEach(b => b.onclick = ()=>showView(b.dataset.view));
 function showView(v){
   document.querySelectorAll("#sideNav button").forEach(b => b.classList.toggle("active", b.dataset.view===v));
@@ -803,10 +810,15 @@ function showView(v){
   if (v==="cauhinh") buildCfg();
   document.getElementById("pageTitle").textContent = v==="tongquan" ? "Tổng quan - 52-HCM SDD-01 Hub" : tabLabel(v).toUpperCase() + " - 52-HCM SDD-01 Hub";
 }
+function tabCount(k){
+  if (k === "pickup") return computePickupTotal().toLocaleString("vi-VN");
+  if (k === "pickchuabangiao") return (DATA.pickcbTotal ?? (DATA[k]||[]).length).toLocaleString("vi-VN");
+  if (k === "hanghv") return (DATA.hanghvTotal ?? (DATA[k]||[]).length).toLocaleString("vi-VN");
+  return (DATA[k]||[]).length;
+}
 function buildDetailTabs(){
   const el = document.getElementById("detailTabs");
-  const pkTotal = computePickupTotal();
-  el.innerHTML = Object.keys(CFG.tabs).filter(k=>k!=="api5").map(k=>`<button data-k="${k}" class="${k===curDetail?'active':''}">${tabLabel(k)} (${k==='pickup' ? pkTotal.toLocaleString("vi-VN") : (k==='pickchuabangiao' ? (DATA.pickcbTotal ?? (DATA[k]||[]).length).toLocaleString("vi-VN") : (DATA[k]||[]).length)})</button>`).join("");
+  el.innerHTML = Object.keys(CFG.tabs).filter(k=>k!=="api5").map(k=>`<button data-k="${k}" class="${k===curDetail?'active':''}">${tabLabel(k)} (${tabCount(k)})</button>`).join("");
   el.querySelectorAll("button").forEach(b => b.onclick = ()=>{ curDetail=b.dataset.k; detailPage.page=1; pickRawPage=1; buildDetailTabs(); renderDetail(); });
 }
 
@@ -1146,6 +1158,70 @@ function buildHangveTable(hvRows){
   html += `</tbody></table>`;
   return html;
 }
+/* Bang tong hop don HV: lay dung 9 cot E,C,D,A,G,H,J,I,K (theo dung thu tu) tu sheet Hang HV */
+const HANGHV_COLS = [4, 2, 3, 0, 6, 7, 9, 8, 10];
+function hanghvTable(){
+  const raw = DATA.hanghvRaw || [];
+  if (!raw || raw.length < 2) return { heads: [], rows: [] };
+  let hi = 0;
+  for (let i = 0; i < Math.min(raw.length, 5); i++){
+    if ((raw[i] || []).join(" ").toLowerCase().includes("mã vận đơn")) { hi = i; break; }
+  }
+  const heads = HANGHV_COLS.map(ci => String((raw[hi] || [])[ci] ?? "").trim() || ("Cột " + ci));
+  const rows = [];
+  for (let i = hi + 1; i < raw.length; i++){
+    const r = raw[i] || [];
+    if (r.every(c => String(c ?? "").trim() === "")) continue;
+    rows.push(HANGHV_COLS.map(ci => r[ci] ?? ""));
+  }
+  // Sap xep trang thai: Lmhub_Received > Delivering > Onhold > con lai
+  const STT_ORDER = { "lmhub_received": 0, "delivering": 1, "onhold": 2 };
+  rows.sort((a, b) => {
+    const sa = String(a[5] ?? "").trim().toLowerCase();
+    const sb = String(b[5] ?? "").trim().toLowerCase();
+    const oa = STT_ORDER[sa] ?? 3, ob = STT_ORDER[sb] ?? 3;
+    if (oa !== ob) return oa - ob;
+    return String(a[0] ?? "").localeCompare(String(b[0] ?? ""), "vi", { numeric: true });
+  });
+  return { heads, rows };
+}
+function renderHangHV(q) {
+  const container = document.getElementById("detailTbl");
+  const info = document.getElementById("detailInfo");
+  container.className = "";
+  const nq = normStr(q || "");
+  const tab = hanghvTable();
+  if (!tab.heads.length) {
+    container.innerHTML = "<tbody><tr><td style='padding:12px;color:var(--muted)'>Chưa tải được dữ liệu tab Hàng HV. Hãy bấm Refresh/Tải tất cả.</td></tr></tbody>";
+    if (info) info.textContent = "";
+    document.getElementById("pagerTop").innerHTML = "";
+    document.getElementById("pagerBot").innerHTML = "";
+    return;
+  }
+  const list = nq ? tab.rows.filter(cells => normStr(cells.join(" ")).includes(nq)) : tab.rows;
+  const totalRows = list.length;
+  const ps = Number(detailPage.pageSize) || 200;
+  const tp = Math.max(1, Math.ceil(totalRows / ps));
+  if (detailPage.page > tp) detailPage.page = tp;
+  if (detailPage.page < 1) detailPage.page = 1;
+  const s0 = (detailPage.page - 1) * ps;
+  const page = list.slice(s0, s0 + ps);
+  let bodyHtml = "<tbody>";
+  if (!page.length) {
+    bodyHtml += `<tr><td colspan="${tab.heads.length}" style='padding:12px;color:var(--muted)'>Không có dữ liệu phù hợp.</td></tr>`;
+  } else {
+    for (const cells of page) {
+      bodyHtml += `<tr>${cells.map(c => `<td>${c ?? ""}</td>`).join("")}</tr>`;
+    }
+  }
+  bodyHtml += "</tbody>";
+  const theadHtml = `<thead><tr>${tab.heads.map(h => `<th>${h}</th>`).join("")}</tr></thead>`;
+  container.innerHTML = `<tbody><tr><td style="padding:0;border:none"><div class="pivot-title kv4" style="margin-bottom:0">Bảng tổng hợp đơn HV <span>(${list.length.toLocaleString("vi-VN")}/${tab.rows.length.toLocaleString("vi-VN")} dòng)</span></div><table style="width:100%;border-collapse:collapse">${theadHtml}${bodyHtml}</table></td></tr></tbody>`;
+  if (info) info.textContent = `Tổng ${list.length.toLocaleString("vi-VN")}/${tab.rows.length.toLocaleString("vi-VN")} dòng — trang ${detailPage.page}/${tp}.`;
+  const bar = buildPager(totalRows, totalRows);
+  document.getElementById("pagerTop").innerHTML = bar;
+  document.getElementById("pagerBot").innerHTML = bar;
+}
 function renderHangVeCustom(rows) {
   const hvRows = computeHangVe();
   const html = `
@@ -1264,6 +1340,11 @@ function renderDetail(){
 
   if (curDetail === "pickchuabangiao") {
     renderPickCBG(rows, q);
+    return;
+  }
+
+  if (curDetail === "hanghv") {
+    renderHangHV(q);
     return;
   }
 
