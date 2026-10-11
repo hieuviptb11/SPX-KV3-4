@@ -178,6 +178,7 @@
     <button data-view="assign">🧾 Assign <span class="cnt" id="cntAssign">–</span></button>
     <button data-view="pickup">📥 Dí Pick <span class="cnt" id="cntPickup">–</span></button>
     <button data-view="pickchuabangiao">📦 Pickup Chưa BG <span class="cnt" id="cntPickCBG">–</span></button>
+    <button data-view="giuhangqd">🌙 Giữ Hàng QĐ <span class="cnt" id="cntGiuQD">–</span></button>
     <button data-view="hanghv">💎 Hàng HV <span class="cnt" id="cntHanghv">–</span></button>
     <button data-view="hangve">🚚 Hàng đang về <span class="cnt" id="cntHangve">–</span></button>
     <button data-view="fte">🧑‍💼 Lịch FTE <span class="cnt" id="cntFte">–</span></button>
@@ -302,8 +303,8 @@
   return total;
 }
 const DEFAULT_ID = "1NbF60xYLto8nJf0krdJ7WYfl6H0fAJ4YG9Xyj42KuZY";
-const DEFAULT_TABS = { backlog:"Backlog", assign:"Assign", fte:"FTE", rider:"Lịch Rider", pickup:"Pickup New", api5:"API 5", pickchuabangiao:"Pick Chưa Bàn Giao", hanghv:"Hàng HV", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID" };
-const TAB_LABEL = { tongquan:"Dashboard", backlog:"Backlog", assign:"Assign", fte:"Lịch FTE", rider:"Lịch Rider", pickup:"Dí Pick", api5:"API 5", pickchuabangiao:"Pickup Chưa BG", hanghv:"Hàng HV", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID", cauhinh:"Cài đặt" };
+const DEFAULT_TABS = { backlog:"Backlog", assign:"Assign", fte:"FTE", rider:"Lịch Rider", pickup:"Pickup New", api5:"API 5", pickchuabangiao:"Pick Chưa Bàn Giao", giuhangqd:"Giữ Hàng Qua Đêm", hanghv:"Hàng HV", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID" };
+const TAB_LABEL = { tongquan:"Dashboard", backlog:"Backlog", assign:"Assign", fte:"Lịch FTE", rider:"Lịch Rider", pickup:"Dí Pick", api5:"API 5", pickchuabangiao:"Pickup Chưa BG", giuhangqd:"Giữ Hàng QĐ", hanghv:"Hàng HV", hangve:"Hàng đang về", wh:"WH", mp:"MP", zoneid:"Zone ID", cauhinh:"Cài đặt" };
 function tabLabel(k){ return TAB_LABEL[k] || k; }
 let CFG = loadCfg();
 let DATA = {}; let timer = null; let curDetail = "backlog"; let rosterDate = "";
@@ -559,7 +560,7 @@ async function loadAll(manual){
   // Pickup & Hang ve chi dung ban raw 2D de ve -> bo qua ban parsed cho nhe.
   const fails = [];
   const jobs = Object.entries(CFG.tabs)
-    .filter(([key]) => key !== "pickup" && key !== "hangve" && key !== "hanghv")
+    .filter(([key]) => key !== "pickup" && key !== "hangve" && key !== "hanghv" && key !== "giuhangqd")
     .map(async ([key, tab]) => {
       try { DATA[key] = await fetchOneTab(CFG.id, tab, key); }
       catch(e) { DATA[key] = []; fails.push(tab); }
@@ -568,11 +569,12 @@ async function loadAll(manual){
     fetchViaJsonp2D(CFG.id, CFG.tabs.pickup).then(v => { DATA.pickupRaw = v; DATA.pickup = v; }).catch(() => { DATA.pickupRaw = []; DATA.pickup = []; fails.push(CFG.tabs.pickup); }),
     fetchViaJsonp2D(CFG.id, CFG.tabs.api5 || "API 5").then(v => { DATA.api5Raw = v; }).catch(() => { DATA.api5Raw = []; fails.push(CFG.tabs.api5 || "API 5"); }),
     fetchViaJsonp2D(CFG.id, CFG.tabs.hangve).then(v => { DATA.hangveRaw = v; DATA.hangve = v; }).catch(() => { DATA.hangveRaw = []; DATA.hangve = []; fails.push(CFG.tabs.hangve); }),
+    fetchViaJsonp2D(CFG.id, CFG.tabs.giuhangqd || "Giữ Hàng Qua Đêm").then(v => { DATA.giuqdRaw = v; DATA.giuhangqd = v; }).catch(() => { DATA.giuqdRaw = []; DATA.giuhangqd = []; fails.push(CFG.tabs.giuhangqd || "Giữ Hàng Qua Đêm"); }),
     fetchViaJsonp2D(CFG.id, CFG.tabs.hanghv || "Hàng HV").then(v => { DATA.hanghvRaw = v; DATA.hanghv = v; }).catch(() => { DATA.hanghvRaw = []; DATA.hanghv = []; fails.push(CFG.tabs.hanghv || "Hàng HV"); })
   );
   await Promise.all(jobs);
   {
-    const cntMap = {backlog:"cntBacklog",assign:"cntAssign",fte:"cntFte",rider:"cntRider",pickchuabangiao:"cntPickCBG",hanghv:"cntHanghv",hangve:"cntHangve"};
+    const cntMap = {backlog:"cntBacklog",assign:"cntAssign",fte:"cntFte",rider:"cntRider",pickchuabangiao:"cntPickCBG",giuhangqd:"cntGiuQD",hanghv:"cntHanghv",hangve:"cntHangve"};
     for (const [k, eid] of Object.entries(cntMap)){
       const cEl = document.getElementById(eid);
       if (cEl) cEl.textContent = (DATA[k]||[]).length;
@@ -588,6 +590,11 @@ async function loadAll(manual){
   {
     const chv = document.getElementById("cntHanghv");
     if (chv) chv.textContent = (DATA.hanghvTotal ?? 0).toLocaleString("vi-VN");
+  }
+  DATA.giuqdTotal = giuqdTotal();
+  {
+    const cgq = document.getElementById("cntGiuQD");
+    if (cgq) cgq.textContent = (DATA.giuqdTotal ?? 0).toLocaleString("vi-VN");
   }
   if (fails.length) window.__loadFails = fails;
 
@@ -796,7 +803,7 @@ function renderOverview(now){
   }
 }
 
-const views = ["tongquan","backlog","assign","pickup","pickchuabangiao","hanghv","hangve","fte","rider","cauhinh"];
+const views = ["tongquan","backlog","assign","pickup","pickchuabangiao","giuhangqd","hanghv","hangve","fte","rider","cauhinh"];
 document.querySelectorAll("#sideNav button").forEach(b => b.onclick = ()=>showView(b.dataset.view));
 function showView(v){
   document.querySelectorAll("#sideNav button").forEach(b => b.classList.toggle("active", b.dataset.view===v));
@@ -814,6 +821,7 @@ function tabCount(k){
   if (k === "pickup") return computePickupTotal().toLocaleString("vi-VN");
   if (k === "pickchuabangiao") return (DATA.pickcbTotal ?? (DATA[k]||[]).length).toLocaleString("vi-VN");
   if (k === "hanghv") return (DATA.hanghvTotal ?? (DATA[k]||[]).length).toLocaleString("vi-VN");
+  if (k === "giuhangqd") return (DATA.giuqdTotal ?? (DATA[k]||[]).length).toLocaleString("vi-VN");
   return (DATA[k]||[]).length;
 }
 function buildDetailTabs(){
@@ -1185,6 +1193,80 @@ function hanghvTable(){
   });
   return { heads, rows };
 }
+/* Bang giu hang qua dem: 9 cot E,C,D,A,G,H,I,J,K (theo dung thu tu) + tong hop theo Rider.
+   Sheet goc khong co cot COT nen bang tong hop gop theo Khu Vuc/Rider. */
+const GIUQD_COLS = [4, 2, 3, 0, 6, 7, 8, 9, 10, 11, 12];
+function giuqdTable(){
+  const raw = DATA.giuqdRaw || [];
+  if (!raw || raw.length < 2) return { heads: [], rows: [] };
+  let hi = 0;
+  for (let i = 0; i < Math.min(raw.length, 5); i++){
+    if ((raw[i] || []).join(" ").toLowerCase().includes("mã vận đơn")) { hi = i; break; }
+  }
+  const heads = GIUQD_COLS.map(ci => String((raw[hi] || [])[ci] ?? "").trim() || ("Cột " + ci));
+  const rows = [];
+  for (let i = hi + 1; i < raw.length; i++){
+    const r = raw[i] || [];
+    if (r.every(c => String(c ?? "").trim() === "")) continue;
+    const cells = GIUQD_COLS.map(ci => r[ci] ?? "");
+    if (cells.some(c => String(c ?? "").trim().startsWith("#"))) continue;
+    rows.push(cells);
+  }
+  return { heads, rows };
+}
+function giuqdTotal(){
+  try { return giuqdTable().rows.length; }
+  catch(e){ return (DATA.giuhangqd || []).length; }
+}
+function renderGiuQD(q) {
+  const container = document.getElementById("detailTbl");
+  const info = document.getElementById("detailInfo");
+  container.className = "";
+  document.getElementById("pagerTop").innerHTML = "";
+  document.getElementById("pagerBot").innerHTML = "";
+  const nq = normStr(q || "");
+  const tab = giuqdTable();
+  if (!tab.heads.length) {
+    container.innerHTML = "<tbody><tr><td style='padding:12px;color:var(--muted)'>Chưa tải được dữ liệu tab Giữ Hàng QĐ. Hãy bấm Refresh/Tải tất cả.</td></tr></tbody>";
+    if (info) info.textContent = "";
+    return;
+  }
+  const f = nq ? tab.rows.filter(cells => normStr(cells.join(" ")).includes(nq)) : tab.rows;
+  // Tong hop theo Rider: COT (9) | Khu Vuc M (10) | Driver (1) | Ma TX (2)
+  const gMap = {};
+  for (const cells of f){
+    const gCot = String(cells[9] ?? "").trim();
+    const gKv = String(cells[10] ?? "").trim();
+    const gDrv = String(cells[1] ?? "").trim();
+    const gMa = String(cells[2] ?? "").trim();
+    const gk = (gCot + "|" + gKv + "|" + gDrv.toUpperCase() + "|" + gMa).toUpperCase();
+    if (!gMap[gk]) gMap[gk] = { cot: gCot, kv: gKv, drv: gDrv || "(Trống)", ma: gMa, n: 0 };
+    gMap[gk].n++;
+  }
+  const gRows = Object.values(gMap).sort((a,b) => (a.kv||"").localeCompare(b.kv||"") || (a.cot||"").localeCompare(b.cot||"") || b.n - a.n || a.drv.localeCompare(b.drv));
+  let sumHtml = `<div class="pivot-title kv4">Tổng hợp theo Rider <span>(${gRows.length} rider • ${f.length.toLocaleString("vi-VN")} đơn)</span></div>
+  <div style="overflow:auto;max-height:300px;margin-bottom:4px"><table class="pivot"><colgroup><col style="width:14%"><col style="width:16%"><col style="width:34%"><col style="width:20%"><col style="width:16%"></colgroup><thead><tr><th>COT</th><th>Khu Vực</th><th>Họ tên Rider</th><th>Mã Tài Xế</th><th style="text-align:right">Tổng số đơn</th></tr></thead><tbody>`;
+  for (const s of gRows){
+    sumHtml += `<tr><td>${s.cot}</td><td>${s.kv}</td><td>${s.drv}</td><td>${s.ma}</td><td style="text-align:right"><b>${s.n.toLocaleString("vi-VN")}</b></td></tr>`;
+  }
+  sumHtml += `<tr class="grand"><td colspan="4">TỔNG CỘNG</td><td style="text-align:right"><b>${f.length.toLocaleString("vi-VN")}</b></td></tr></tbody></table></div>`;
+  const ps = Number(detailPage.pageSize) || 200;
+  const tp = Math.max(1, Math.ceil(f.length / ps));
+  if (detailPage.page > tp) detailPage.page = tp;
+  if (detailPage.page < 1) detailPage.page = 1;
+  const s0 = (detailPage.page - 1) * ps;
+  const page = f.slice(s0, s0 + ps);
+  let html = "<thead><tr>" + tab.heads.slice(0, 9).map(h => `<th>${h}</th>`).join("") + "</tr></thead><tbody>";
+  for (const cells of page) {
+    html += "<tr>" + cells.slice(0, 9).map(c => `<td>${c ?? ""}</td>`).join("") + "</tr>";
+  }
+  html += "</tbody>";
+  container.innerHTML = `<tbody><tr><td style="padding:0;border:none">${sumHtml}<div class="pivot-title kv3" style="margin-top:10px">Bảng dữ liệu chi tiết <span>(${f.length.toLocaleString("vi-VN")} dòng)</span></div><table style="width:100%;border-collapse:collapse">${html}</table></td></tr></tbody>`;
+  if (info) info.textContent = `Tổng ${f.length.toLocaleString("vi-VN")}/${tab.rows.length.toLocaleString("vi-VN")} dòng — trang ${detailPage.page}/${tp}.`;
+  const bar = buildPager(f.length, f.length);
+  document.getElementById("pagerTop").innerHTML = bar;
+  document.getElementById("pagerBot").innerHTML = bar;
+}
 function renderHangHV(q) {
   const container = document.getElementById("detailTbl");
   const info = document.getElementById("detailInfo");
@@ -1340,6 +1422,11 @@ function renderDetail(){
 
   if (curDetail === "pickchuabangiao") {
     renderPickCBG(rows, q);
+    return;
+  }
+
+  if (curDetail === "giuhangqd") {
+    renderGiuQD(q);
     return;
   }
 
