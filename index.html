@@ -18,15 +18,17 @@
     --line:#e7e2dc;
   }
   * { box-sizing:border-box; }
-  body { margin:0; font-family:"Segoe UI",system-ui,sans-serif; background:var(--bg); color:var(--ink); display:flex; min-height:100vh; font-size:13px; overflow-x:hidden; }
+  body { margin:0; font-family:"Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--ink); display:flex; min-height:100vh; font-size:13px; overflow-x:hidden; }
+  button, input, select, textarea, table { font-family:"Segoe UI", Arial, sans-serif; }
   aside { width:210px; background:#fff; border-right:1px solid #e2e8f0; padding:12px 10px; position:sticky; top:0; height:100vh; display:flex; flex-direction:column; gap:4px; }
-  .logo { display:flex; align-items:center; gap:8px; font-weight:800; font-size:16px; margin-bottom:12px; }
+  .logo { display:flex; align-items:center; gap:8px; font-weight:800; font-size:16px; margin-bottom:12px; color:var(--ink); }
   .logo .box { background:linear-gradient(135deg, var(--primary), var(--primary-dark)); color:#fff; width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(234,88,12,.35); }
   .logo .hub { background:var(--primary-light); color:var(--primary-dark); font-size:11px; padding:3px 8px; border-radius:7px; font-weight:700; }
   .nav button { width:100%; text-align:left; border:0; border-left:3px solid transparent; background:transparent; padding:8px 10px 8px 7px; border-radius:9px; cursor:pointer; font-size:13px; color:var(--ink); display:flex; gap:8px; align-items:center; transition:background .12s,border-color .12s; }
   .nav button:hover { background:#f8fafc; }
   .nav button.active { background:var(--primary-light); color:var(--primary-dark); font-weight:700; border-left:3px solid var(--primary); }
   .nav button .cnt { margin-left:auto; background:#f1f5f9; border-radius:10px; font-size:11px; padding:1px 8px; color:var(--muted); }
+  .side-foot { margin-top:auto; font-size:12px; color:var(--muted); }
   main { flex:1; padding:14px 16px; max-width:100%; overflow-x:hidden; }
   .topbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
   .topbar h2 { margin:0; font-size:17px; color:var(--primary); flex:1; }
@@ -40,7 +42,7 @@
   .kcard:hover { box-shadow:0 6px 16px rgba(0,0,0,.09); transform:translateY(-1px); border-top-color:var(--primary); }
   .kcard .kv { display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--muted); }
   .kcard .kv .tag { font-size:10px; font-weight:800; padding:2px 8px; border-radius:7px; }
-  .tag.kv3 { background:#dcfce7; color:#166534; } .tag.kv4 { background:#dbeafe; color:#1e40af; }
+  .tag.kv3 { background:#dcfce7; color:#166534; } .tag.kv4 { background:#dbeafe; color:#1e40af; } .tag.bk { background:#fef3c7; color:#92400e; }
   .kcard .big { font-size:26px; font-weight:800; margin:4px 0; }
   .kcard .upd { font-size:11px; color:var(--muted); }
   
@@ -50,7 +52,9 @@
 
   .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .grid2 > div { min-width:0; }
-  @media (max-width:900px){ .grid2{ grid-template-columns:1fr; } aside{ display:none; } }
+  .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  .grid3 > div { min-width:0; }
+  @media (max-width:900px){ .grid2{ grid-template-columns:1fr; } .grid3{ grid-template-columns:1fr; } aside{ display:none; } }
   .card { background:var(--card); border-radius:12px; padding:12px 13px; box-shadow:0 1px 3px rgba(0,0,0,.07); }
   .card h3 { margin:0 0 8px; font-size:14px; }
   table { width:100%; border-collapse:collapse; font-size:11px; }
@@ -167,6 +171,7 @@
   body.dark .hv-chart-svg-wrap svg text[fill="#0f172a"] { fill:#e8eef6; }
   body.dark .hv-chart-svg-wrap svg text[fill="#64748b"] { fill:#93a1b5; }
   body.dark ::-webkit-scrollbar-track { background:#101827; }
+
 </style>
 </head>
 <body>
@@ -185,7 +190,7 @@
     <button data-view="rider">🛵 Lịch Rider <span class="cnt" id="cntRider">–</span></button>
     <button data-view="cauhinh">⚙️ Cài đặt</button>
   </div>
-  <div style="margin-top:auto;font-size:12px;color:var(--muted)">Admin SPX<br>● Đang hoạt động</div>
+  <div class="side-foot">Admin SPX<br>● Đang hoạt động</div>
 </aside>
 <main>
   <div class="topbar">
@@ -235,9 +240,10 @@
     </div>
     <div class="card" style="margin-top:12px"><div style="font-size:13px;font-weight:700;margin-bottom:6px">Chi tiết ca hôm nay (<span id="tFteDate2">–</span>)</div><div class="upd" id="fteShiftList" style="font-size:13px;line-height:1.6">Chưa tải.</div></div>
     <div class="section-title">🛵 DRIVER ĐANG HOẠT ĐỘNG: <span id="tRider">–</span></div>
-    <div class="grid2">
+    <div class="grid3">
       <div class="kcard"><div class="kv">◉ Khu vực 3 <span class="tag kv3" id="tagR3">KV3</span></div><div class="big" id="drvWork3" style="color:#16a34a">–</div><div class="upd" id="riderList3">Chưa tải.</div></div>
       <div class="kcard"><div class="kv">◉ Khu vực 4 <span class="tag kv4" id="tagR4">KV4</span></div><div class="big" id="drvWork4" style="color:#16a34a">–</div><div class="upd" id="riderList4">Chưa tải.</div></div>
+      <div class="kcard"><div class="kv">◉ Backup <span class="tag bk" id="tagRB">BK</span></div><div class="big" id="drvWorkB" style="color:#b45309">–</div><div class="upd" id="riderListB">Chưa tải.</div></div>
     </div>
   </section>
 
@@ -462,7 +468,8 @@ function computeHangVe(){
 function fetchViaJsonp(id, name){
   return new Promise((resolve, reject)=>{
     const cb = "__cb" + Date.now() + "_" + (window.__cbSeq = (window.__cbSeq||0)+1) + "_" + Math.floor(Math.random()*1e6);
-    const to = setTimeout(()=>{ cleanup(); reject(new Error("timeout")); }, 15000);
+    // Sheet lon (Assign ~6.4MB JSON) tren mang cham de vuot 15s -> bao loi gia. Nang len 30s.
+    const to = setTimeout(()=>{ cleanup(); reject(new Error("timeout")); }, 30000);
     function cleanup(){ clearTimeout(to); const s=document.getElementById(cb); if(s) s.remove(); try{delete window[cb];}catch(e){ window[cb]=undefined; } }
     window[cb] = (resp)=>{
       cleanup();
@@ -498,10 +505,10 @@ function fetchViaJsonp(id, name){
 }
 
 /* HÀM CHUYÊN DỤNG LẤY MẢNG 2D THÔ CHO PICKUP (KHÔNG BỊ CORS HAY ĐỔI TIÊU ĐỀ) */
-function fetchViaJsonp2D(id, name){
+function fetchViaJsonp2D(id, name, tq){
   return new Promise((resolve, reject)=>{
     const cb = "__cb2d" + Date.now() + "_" + (window.__cbSeq = (window.__cbSeq||0)+1) + "_" + Math.floor(Math.random()*1e6);
-    const to = setTimeout(()=>{ cleanup(); reject(new Error("timeout")); }, 15000);
+    const to = setTimeout(()=>{ cleanup(); reject(new Error("timeout")); }, 30000);
     function cleanup(){ clearTimeout(to); const s=document.getElementById(cb); if(s) s.remove(); try{delete window[cb];}catch(e){ window[cb]=undefined; } }
     window[cb] = (resp)=>{
       cleanup();
@@ -524,20 +531,24 @@ function fetchViaJsonp2D(id, name){
     };
     const s = document.createElement("script"); s.id = cb;
     s.onerror = ()=>{ cleanup(); reject(new Error("script error")); };
-    s.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json;responseHandler:${cb}&sheet=${encodeURIComponent(name)}`;
+    s.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json;responseHandler:${cb}&sheet=${encodeURIComponent(name)}` + (tq ? `&tq=${encodeURIComponent(tq)}` : "");
     document.head.appendChild(s);
   });
 }
 
 async function fetchTab(id, tab){
   const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
+  // fetch khong co timeout mac dinh -> tu abort sau 25s de khong treo loadAll vinh vien
+  const ctl = new AbortController();
+  const to = setTimeout(()=>{ try{ ctl.abort(); }catch(e){} }, 25000);
   try{
-    const res = await fetch(url, {cache:"no-store"});
+    const res = await fetch(url, {cache:"no-store", signal: ctl.signal});
+    clearTimeout(to);
     const txt = await res.text();
     if (!res.ok || txt.trimStart().startsWith("<")) throw new Error("http "+res.status);
     const p = Papa.parse(txt, {header:true, skipEmptyLines:true});
     return p.data.filter(r => Object.values(r).some(v => String(v).trim() !== ""));
-  }catch(e){ return await fetchViaJsonp(id, tab); }
+  }catch(e){ clearTimeout(to); throw e; }
 }
 
 async function fetchOneTab(id, tab, key){
@@ -552,27 +563,35 @@ async function fetchOneTab(id, tab, key){
   }
 }
 
+let LOADING = false; // chong cac luot tai chong len nhau
 async function loadAll(manual){
+  if (LOADING) return; // luot truoc chua xong (mang cham / du lieu lon) -> bo qua, tranh treo trinh duyet
+  LOADING = true;
   const msg = document.getElementById("msg");
+  try {
   msg.innerHTML = "Đang tải " + Object.keys(CFG.tabs).length + " tab (song song)...";
   const now = new Date().toLocaleString("vi-VN");
   // TAI SONG SONG tat ca tab (ban cu doi tung tab noi tiep -> 15-20s).
   // Pickup & Hang ve chi dung ban raw 2D de ve -> bo qua ban parsed cho nhe.
   const fails = [];
+  // 2 sheet nang nhat (API 5 ~2.9MB, Hang dang ve ~1.2MB trung voi Backlog) khong tai san:
+  // chi tai khi mo tab tuong ung -> giam ~8MB/lan refresh.
+  DATA.api5Init = false; DATA.api5Stale = true; DATA.api5Fail = false;
+  DATA.hangveInit = false; DATA.hangveStale = true;
   const jobs = Object.entries(CFG.tabs)
-    .filter(([key]) => key !== "pickup" && key !== "hangve" && key !== "hanghv" && key !== "giuhangqd")
+    .filter(([key]) => key !== "pickup" && key !== "hangve" && key !== "hanghv" && key !== "giuhangqd" && key !== "api5")
     .map(async ([key, tab]) => {
       try { DATA[key] = await fetchOneTab(CFG.id, tab, key); }
       catch(e) { DATA[key] = []; fails.push(tab); }
     });
   jobs.push(
     fetchViaJsonp2D(CFG.id, CFG.tabs.pickup).then(v => { DATA.pickupRaw = v; DATA.pickup = v; }).catch(() => { DATA.pickupRaw = []; DATA.pickup = []; fails.push(CFG.tabs.pickup); }),
-    fetchViaJsonp2D(CFG.id, CFG.tabs.api5 || "API 5").then(v => { DATA.api5Raw = v; }).catch(() => { DATA.api5Raw = []; fails.push(CFG.tabs.api5 || "API 5"); }),
-    fetchViaJsonp2D(CFG.id, CFG.tabs.hangve).then(v => { DATA.hangveRaw = v; DATA.hangve = v; }).catch(() => { DATA.hangveRaw = []; DATA.hangve = []; fails.push(CFG.tabs.hangve); }),
     fetchViaJsonp2D(CFG.id, CFG.tabs.giuhangqd || "Giữ Hàng Qua Đêm").then(v => { DATA.giuqdRaw = v; DATA.giuhangqd = v; }).catch(() => { DATA.giuqdRaw = []; DATA.giuhangqd = []; fails.push(CFG.tabs.giuhangqd || "Giữ Hàng Qua Đêm"); }),
     fetchViaJsonp2D(CFG.id, CFG.tabs.hanghv || "Hàng HV").then(v => { DATA.hanghvRaw = v; DATA.hanghv = v; }).catch(() => { DATA.hanghvRaw = []; DATA.hanghv = []; fails.push(CFG.tabs.hanghv || "Hàng HV"); })
   );
   await Promise.all(jobs);
+  let pkTotal = 0, hvTotal = 0;
+  try {
   {
     const cntMap = {backlog:"cntBacklog",assign:"cntAssign",fte:"cntFte",rider:"cntRider",pickchuabangiao:"cntPickCBG",giuhangqd:"cntGiuQD",hanghv:"cntHanghv",hangve:"cntHangve"};
     for (const [k, eid] of Object.entries(cntMap)){
@@ -581,7 +600,7 @@ async function loadAll(manual){
     }
   }
   // So tab Pickup Chua BG = so dong SACH (bo #N/A) = dung so TONG CONG
-  DATA.pickcbTotal = pickCBGTotal();
+  try { DATA.pickcbTotal = pickCBGTotal(); } catch(e){ DATA.pickcbTotal = 0; }
   {
     const cpc = document.getElementById("cntPickCBG");
     if (cpc) cpc.textContent = (DATA.pickcbTotal ?? 0).toLocaleString("vi-VN");
@@ -591,26 +610,34 @@ async function loadAll(manual){
     const chv = document.getElementById("cntHanghv");
     if (chv) chv.textContent = (DATA.hanghvTotal ?? 0).toLocaleString("vi-VN");
   }
-  DATA.giuqdTotal = giuqdTotal();
+  try { DATA.giuqdTotal = giuqdTotal(); } catch(e){ DATA.giuqdTotal = 0; }
   {
     const cgq = document.getElementById("cntGiuQD");
     if (cgq) cgq.textContent = (DATA.giuqdTotal ?? 0).toLocaleString("vi-VN");
   }
+  } catch(e){}
   if (fails.length) window.__loadFails = fails;
 
   // HIỂN THỊ TỔNG SỐ ĐƠN PICKUP LÊN MENU BÊN TRÁI
-  const pkTotal = computePickupTotal();
+  try { pkTotal = computePickupTotal(); } catch(e){ pkTotal = 0; }
   const cntPk = document.getElementById("cntPickup");
   if (cntPk) cntPk.textContent = pkTotal.toLocaleString("vi-VN");
 
-  const hvTotal = computeHangVe().reduce((s,r)=>s+r.wh+r.mp, 0);
+  try { hvTotal = computeHangVe().reduce((s,r)=>s+r.wh+r.mp, 0); } catch(e){ hvTotal = 0; }
   const cntHv = document.getElementById("cntHangve");
   if (cntHv) cntHv.textContent = hvTotal || (DATA.hangve||[]).length;
 
-  renderOverview(now); renderDetail();
+  // tung buoc ve deu co try/catch rieng: 1 tab hong khong duoc lam trang ca dashboard
+  try { renderOverview(now); } catch(e){ fails.push("hiển thị tổng quan (" + (e && e.message) + ")"); }
+  try { renderDetail(); } catch(e){ fails.push("hiển thị chi tiết (" + (e && e.message) + ")"); }
   const failMsg = fails.length ? `<div class="err">Không tải được tab: ${fails.join(", ")}. Kiểm tra tên tab + Share Anyone.</div>` : "";
   msg.innerHTML = `<span class="ok">Xong lúc ${now} — Backlog ${DATA.backlog?.length||0}, FTE ${DATA.fte?.length||0}, Rider ${DATA.rider?.length||0}, Pickup ${pkTotal.toLocaleString("vi-VN")}, Hàng về ${hvTotal.toLocaleString("vi-VN")}.</span>` + failMsg;
-  setupTimer();
+  } catch(e) {
+    msg.innerHTML = `<div class="err">Lỗi tải dữ liệu (${(e && e.message) || e}). Bấm "↻ Tải tất cả" để thử lại.</div>`;
+  } finally {
+    LOADING = false;
+    setupTimer();
+  }
 }
 
 function countKV(rows){ let a=0,b=0; for (const r of rows){ (kvOf(r)==="KV3"?a++:b++); } return [a,b]; }
@@ -730,10 +757,13 @@ function renderOverview(now){
     if (!rRows.length) return;
 
     const rk = Object.keys(rRows[0]);
-    const rKv = rk.find(k => normStr(k).includes("khu vuc") || normStr(k).includes("kv")) || rk[1];
-    const rCot = rk.find(k => normStr(k) === "cot" || normStr(k).includes("cot")) || rk[2];
-    const rId = rk.find(k => normStr(k).includes("ma") && (normStr(k).includes("tai") || normStr(k).includes("nv") || normStr(k).includes("id"))) || rk[3];
-    const rNm = rk.find(k => normStr(k).includes("ten") || normStr(k).includes("driver") || normStr(k).includes("ho va ten")) || rk[4];
+    const rCheck = rk.find(k => normStr(k) === "check") || rk.find(k => normStr(k).includes("check"));
+    const rZone = rk.find(k => normStr(k).includes("zone"));
+    // KHONG fallback rk[1]/rk[2]: rk[2] la "Driver ID" (vd 163731) chua so 3/4 se lam sai tach KV
+    const rKv = rk.find(k => normStr(k).includes("khu vuc") || normStr(k).includes("kv"));
+    const rCot = rk.find(k => normStr(k) === "cot" || normStr(k).includes("cot"));
+    const rId = rk.find(k => normStr(k).includes("driver id")) || rk.find(k => normStr(k).includes("ma") && (normStr(k).includes("tai") || normStr(k).includes("nv") || normStr(k).includes("id"))) || rk[2];
+    const rNm = rk.find(k => normStr(k).includes("driver name")) || rk.find(k => normStr(k).includes("ten") && normStr(k).includes("driver")) || rk.find(k => normStr(k).includes("ho va ten")) || rk.find(k => normStr(k).includes("ten")) || rk[3];
 
     const assignCnt = {};
     const ak = aRows.length ? Object.keys(aRows[0]) : [];
@@ -749,15 +779,22 @@ function renderOverview(now){
 
     const dataGroup = {
       KV3: { COT1: { on: [], off: [] }, COT2: { on: [], off: [] } },
-      KV4: { COT1: { on: [], off: [] }, COT2: { on: [], off: [] } }
+      KV4: { COT1: { on: [], off: [] }, COT2: { on: [], off: [] } },
+      BK: { COT1: { on: [], off: [] }, COT2: { on: [], off: [] } }
+    };
+    // Zone chi ghi "COT 1"/"COT 2" (khong co so zone) = team Backup -> nhom BK rieng, khong cong vao KV3/KV4
+    const kvOfZone = (zoneAll) => {
+      const has3 = zoneAll.includes("3"), has4 = zoneAll.includes("4");
+      if (!has3 && !has4) return "BK";
+      if (/zone 4|\bz4\b|kv4/.test(zoneAll) || (has4 && !has3)) return "KV4";
+      return "KV3";
     };
 
     for (const r of rRows){
-      const kvStr = normStr(rKv ? r[rKv] : "");
-      const cotStr = normStr(rCot ? r[rCot] : "");
-      const kvKey = kvStr.includes("4") ? "KV4" : "KV3";
-
-      const cotKey = cotStr.includes("2") ? "COT2" : "COT1";
+      // Zone dang "Zone 3 - COT 1" -> tach KV + COT tu day (dung hon cot KV/COT rieng)
+      const zoneAll = normStr(rZone ? r[rZone] : "") + " " + normStr(rKv ? r[rKv] : "") + " " + normStr(rCot ? r[rCot] : "");
+      const kvKey = kvOfZone(zoneAll);
+      const cotKey = zoneAll.includes("cot 2") || zoneAll.includes("cot2") ? "COT2" : "COT1";
       const name = String(rNm ? r[rNm] : "").trim();
       const id = String(rId ? r[rId] : "").trim().toUpperCase();
       if (!name && !id) continue;
@@ -765,7 +802,17 @@ function renderOverview(now){
       const assignVal = (id && assignCnt[id]) || (name && assignCnt[name.toUpperCase()]) || 0;
       const item = { name: name || id, id, assign: assignVal };
 
-      if (assignVal > 0) {
+      // Uu tien cot Check: "Di Lam" = di lam, "Off Lui"/"Off"/"Nghi" = nghi. Fallback assign>0.
+      let isOn;
+      if (rCheck){
+        const c = normStr(r[rCheck]);
+        if (c.includes("off") || c.includes("lui") || c.includes("nghi")) isOn = false;
+        else if (c.includes("di lam") || c === "on" || c.includes("lam")) isOn = true;
+        else isOn = assignVal > 0;
+      } else {
+        isOn = assignVal > 0;
+      }
+      if (isOn) {
         dataGroup[kvKey][cotKey].on.push(item);
       } else {
         dataGroup[kvKey][cotKey].off.push(item);
@@ -775,7 +822,7 @@ function renderOverview(now){
     const formatRiderSummary = (group) => {
       const c1On = group.COT1.on.length, c1Off = group.COT1.off.length;
       const c2On = group.COT2.on.length, c2Off = group.COT2.off.length;
-      const drvNames = (arr) => arr.slice(0, 15).map(m => `${m.name}${m.assign ? ` (${m.assign})` : ""}`).join(", ") + (arr.length > 15 ? ` … +${arr.length - 15} nữa` : "");
+      const drvNames = (arr) => arr.slice(0, 20).map(m => `${m.name}`).join(", ") + (arr.length > 20 ? ` … +${arr.length - 20} nữa` : "");
 
       return {
         totalOn: c1On + c2On,
@@ -783,23 +830,27 @@ function renderOverview(now){
         c1On, c1Off, c2On, c2Off,
         html: `
           <div style="margin-bottom:4px; font-weight:700; color:#0f172a;">🔥 COT 1: <span style="color:#16a34a">${c1On} đi làm</span> / <span style="color:#dc2626">${c1Off} nghỉ</span></div>
-          <div style="font-size:10.5px; margin-bottom:6px;">✅ Đi làm: ${drvNames(group.COT1.on) || "–"}<br>❌ Nghỉ: ${drvNames(group.COT1.off) || "–"}</div>
+          <div style="font-size:10.5px; margin-bottom:6px;">❌ Nghỉ: ${drvNames(group.COT1.off) || "–"}</div>
           <div style="margin-bottom:4px; font-weight:700; color:#0f172a; border-top:1px dashed #cbd5e1; padding-top:4px;">⚡ COT 2: <span style="color:#16a34a">${c2On} đi làm</span> / <span style="color:#dc2626">${c2Off} nghỉ</span></div>
-          <div style="font-size:10.5px;">✅ Đi làm: ${drvNames(group.COT2.on) || "–"}<br>❌ Nghỉ: ${drvNames(group.COT2.off) || "–"}</div>
+          <div style="font-size:10.5px;">❌ Nghỉ: ${drvNames(group.COT2.off) || "–"}</div>
         `
       };
     };
 
     const res3 = formatRiderSummary(dataGroup.KV3);
     const res4 = formatRiderSummary(dataGroup.KV4);
+    const resB = formatRiderSummary(dataGroup.BK);
 
-    document.getElementById("tRider").textContent = `KV3: ${res3.totalOn} đi làm / ${res3.totalOff} nghỉ • KV4: ${res4.totalOn} đi làm / ${res4.totalOff} nghỉ`;
+    document.getElementById("tRider").textContent = `KV3: ${res3.totalOn} đi làm / ${res3.totalOff} nghỉ • KV4: ${res4.totalOn} đi làm / ${res4.totalOff} nghỉ • Backup: ${resB.totalOn} đi làm / ${resB.totalOff} nghỉ`;
     document.getElementById("drvWork3").textContent = res3.totalOn; 
     document.getElementById("drvWork4").textContent = res4.totalOn;
+    document.getElementById("drvWorkB").textContent = resB.totalOn;
     document.getElementById("tagR3").textContent = `${res3.totalOn} đi làm • ${res3.totalOff} nghỉ`;
     document.getElementById("tagR4").textContent = `${res4.totalOn} đi làm • ${res4.totalOff} nghỉ`;
+    document.getElementById("tagRB").textContent = `${resB.totalOn} đi làm • ${resB.totalOff} nghỉ`;
     document.getElementById("riderList3").innerHTML = res3.html;
     document.getElementById("riderList4").innerHTML = res4.html;
+    document.getElementById("riderListB").innerHTML = resB.html;
   }
 }
 
@@ -841,7 +892,7 @@ function renderFteCustom(rows, q) {
   const nameCol = rosterNameCol(rows);
   let filterRows = rows;
   if (q) {
-    filterRows = rows.filter(r => normStr(Object.values(r).join(" ")).includes(normStr(q)));
+    filterRows = rows.filter(r => botRowMatch(r, normStr(q)));
   }
 
   const onList = [];
@@ -909,22 +960,49 @@ function renderFteCustom(rows, q) {
 /* Bang du lieu tho tab Di Pick: lay dung 9 cot AD,AB,AC,Z,AA,A,C,K,S (theo dung thu tu)
    tu sheet API 5, loc bo hang chua #N/A. */
 const PICKUP_COLS = [29, 27, 28, 25, 26, 0, 2, 10, 18];
+/* Tai API 5 theo yeu cau (lazy) va chi lay 10 cot can dung -> 6.58MB giam con ~2.9MB.
+   select theo dung thu tu AD,AB,AC,Z,AA,A,C,K,S,P nen index 0..8 la 9 cot hien thi, index 9 = cot P. */
+const API5_TQ = "select AD,AB,AC,Z,AA,A,C,K,S,P";
+function ensureApi5(){
+  if (DATA.__pApi5) return DATA.__pApi5;
+  DATA.api5Init = true;
+  const name = CFG.tabs.api5 || "API 5";
+  DATA.__pApi5 = fetchViaJsonp2D(CFG.id, name, API5_TQ)
+    .then(v => { DATA.api5Raw = v; DATA.api5Sel = true; DATA.api5Stale = false; DATA.api5Fail = false; })
+    .catch(() => fetchViaJsonp2D(CFG.id, name)
+      .then(v => { DATA.api5Raw = v; DATA.api5Sel = false; DATA.api5Stale = false; DATA.api5Fail = false; })
+      .catch(() => { DATA.api5Stale = false; DATA.api5Fail = true; }))
+    .then(() => { DATA.__pApi5 = null; });
+  return DATA.__pApi5;
+}
+function ensureHangVe(){
+  if (DATA.__pHangve) return DATA.__pHangve;
+  DATA.hangveInit = true;
+  DATA.__pHangve = fetchViaJsonp2D(CFG.id, CFG.tabs.hangve)
+    .then(v => { DATA.hangveRaw = v; DATA.hangve = v; DATA.hangveStale = false; })
+    .catch(() => { DATA.hangveStale = false; })
+    .then(() => { DATA.__pHangve = null; });
+  return DATA.__pHangve;
+}
 function pickupTable(){
   const raw = DATA.api5Raw || [];
   if (!raw || raw.length < 2) return { heads: [], rows: [] };
+  const sel = !!DATA.api5Sel;
+  const cols = sel ? [0, 1, 2, 3, 4, 5, 6, 7, 8] : PICKUP_COLS;
+  const attIdx = sel ? 9 : 15;
   let hi = 0;
   for (let i = 0; i < Math.min(raw.length, 5); i++){
     if ((raw[i] || []).join(" ").toLowerCase().includes("order number")) { hi = i; break; }
   }
-  const heads = PICKUP_COLS.map(ci => String((raw[hi] || [])[ci] ?? "").trim() || ("Cột " + ci));
+  const heads = cols.map(ci => String((raw[hi] || [])[ci] ?? "").trim() || ("Cột " + ci));
   const isErr = (v) => String(v ?? "").trim().startsWith("#");
   const rows = [];
   for (let i = hi + 1; i < raw.length; i++){
     const r = raw[i] || [];
     if (r.every(c => String(c ?? "").trim() === "")) continue;
     if (r.some(isErr)) continue;
-    if (Number(String(r[15] ?? "").trim()) !== 0) continue; // Cot P (pickup attempts) phai = 0
-    rows.push(PICKUP_COLS.map(ci => r[ci] ?? ""));
+    if (Number(String(r[attIdx] ?? "").trim()) !== 0) continue; // Cot P (pickup attempts) phai = 0
+    rows.push(cols.map(ci => r[ci] ?? ""));
   }
   // Sap xep theo thu tu cot: COT > Khu vuc > Quan > ... (COT 1 truoc, COT 2 sau)
   rows.sort((a, b) => {
@@ -1063,6 +1141,7 @@ function renderPickupCustom(q) {
   container.className = "";
 
   const nq = normStr(q || "");
+  const loading = !DATA.api5Raw || !DATA.api5Raw.length;
   const tab = pickupTable();
   const list = nq ? tab.rows.filter(cells => normStr(cells.join(" ")).includes(nq)) : tab.rows;
 
@@ -1077,7 +1156,13 @@ function renderPickupCustom(q) {
 
   const sum = pickupSummary(q);
   let rawSectionHtml = "";
-  if (tab.heads.length && maxRows > 0) {
+  if (loading) {
+    const failed = !!DATA.api5Fail;
+    rawSectionHtml = `<div class="pivot-title kv4" style="margin-top:14px">Bảng dữ liệu thô — API 5</div>
+      <div style="padding:12px;color:var(--muted)">${failed
+        ? `Không tải được API 5 (timeout/mạng chậm). <button type="button" onclick="DATA.api5Init=false;DATA.api5Fail=false;renderDetail()">Thử lại</button>`
+        : "Đang tải bảng thô API 5 (chỉ tải khi mở tab này để dashboard nhanh hơn)…"}</div>`;
+  } else if (tab.heads.length && maxRows > 0) {
     let rawRowsHtml = "<tbody>";
     for (let i = 0; i < maxRows; i++) {
       const cells = page[i];
@@ -1102,7 +1187,7 @@ function renderPickupCustom(q) {
   }
   container.innerHTML = `<tbody><tr><td style="padding:0;border:none">${sum.html}${rawSectionHtml}</td></tr></tbody>`;
   if (info) {
-    info.textContent = (sum.info ? sum.info + " " : "") + `Bảng thô API 5: ${tab.rows.length.toLocaleString("vi-VN")} dòng (đã lọc #N/A, attempts = 0).`;
+    info.textContent = (sum.info ? sum.info + " " : "") + (loading ? "Bảng thô API 5: đang tải…" : `Bảng thô API 5: ${tab.rows.length.toLocaleString("vi-VN")} dòng (đã lọc #N/A, attempts = 0).`);
   }
   document.getElementById("pagerTop").innerHTML = sum.bar;
   document.getElementById("pagerBot").innerHTML = sum.bar;
@@ -1407,7 +1492,7 @@ function renderDetail(){
   const hasSub0 = rows.length > 0 && k0.some(k => /^\d{1,2}\/\d{1,2}/.test(String(rows[0][k] ?? "").trim()));
   const baseRows = hasSub0 ? rows.slice(1) : rows;
   const nq = normStr(q);
-  const f = q ? baseRows.filter(r=>normStr(Object.values(r).join(" ")).includes(nq)) : baseRows;
+  const f = q ? baseRows.filter(r=>botRowMatch(r, nq)) : baseRows;
   document.getElementById("detailTitle").textContent = tabLabel(curDetail) + " — tab " + (CFG.tabs[curDetail]||"");
   
   renderBacklogPivot(f);
@@ -1416,6 +1501,7 @@ function renderDetail(){
   document.getElementById("pagerBot").innerHTML = "";
 
   if (curDetail === "pickup") {
+    if (!DATA.api5Init) ensureApi5().then(() => { if (curDetail === "pickup") renderDetail(); });
     renderPickupCustom(q);
     return;
   }
@@ -1436,6 +1522,7 @@ function renderDetail(){
   }
 
   if (curDetail === "hangve") {
+    if (!DATA.hangveInit) ensureHangVe().then(() => { if (curDetail === "hangve") renderDetail(); });
     renderHangVeCustom(rows);
     return;
   }
@@ -1613,7 +1700,7 @@ document.addEventListener("change", function(e){
 });
 let filterCachedLen = 0;
 
-let asCollapsed = {};
+let asExpanded = {};
 function assignCols(rows){
   if (!rows.length) return null;
   const keys = Object.keys(rows[0]);
@@ -1669,7 +1756,7 @@ function renderAssignPivot(rows){
     let gt = 0;
     for (const qn of quans){
       const inQ = sub.filter(r => (String(r[ac.quan] ?? "").trim() || "(Trống Quận)") === qn);
-      const key = cv + "|" + qn, closed = !!asCollapsed[key];
+      const key = cv + "|" + qn, open = !!asExpanded[key];
       const riders = {};
 
       for (const r of inQ){
@@ -1692,7 +1779,7 @@ function renderAssignPivot(rows){
       gt += tot;
       const safe = key.replace(/'/g,"");
       
-      if (!closed){
+      if (open){
         const sortedKeys = Object.keys(riders).sort((a,b) => riders[a].displayName.localeCompare(riders[b].displayName));
         for (const k of sortedKeys){
           const item = riders[k];
@@ -1704,8 +1791,8 @@ function renderAssignPivot(rows){
           </tr>`;
         }
         }
-      html += `<tr class="sub" style="cursor:pointer" onclick="asCollapsed['${safe}']=!asCollapsed['${safe}'];renderDetail()">
-        <td colspan="3">${closed?"▸":"▾"} <b>Tổng ${qn}</b></td>
+      html += `<tr class="sub" style="cursor:pointer" onclick="asExpanded['${safe}']=!asExpanded['${safe}'];renderDetail()">
+        <td colspan="3">${open?"▴":"▾"} <b>Tổng ${qn}</b></td>
         <td style="text-align:right"><b>${tot}</b></td>
       </tr>`;
     }
@@ -1844,6 +1931,13 @@ function setupTimer(){
   if (m>0) timer = setInterval(()=>loadAll(false), m*60*1000);
 }
 document.getElementById("autoRefresh").onchange = setupTimer;
+/* Loc bang theo tu khoa (AND): khop tung tu thay vi cum lien tuc */
+function botRowMatch(r, nq){
+  const txt = normStr(Object.values(r).join(" "));
+  const toks = String(nq||"").split(/\s+/).filter(t=>t.length>0 && t !== "-");
+  if (!toks.length) return true;
+  return toks.every(t => txt.includes(t));
+}
 applyDash(); showView("tongquan"); loadAll(false);
 </script>
 </body>
