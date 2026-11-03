@@ -65,6 +65,11 @@
   table.pivot { font-size:11px; table-layout:fixed; width:100%; border-collapse:collapse; }
   table.pivot th { font-size:11px; padding:5px 6px; background:#0f172a; color:#fff; position:sticky; top:0; z-index:10; }
   table.pivot td { padding:5px 6px; }
+  /* Bang Backlog: cot Quan/Phuong rong + khong xuong dong, cot so can phai */
+  #bpTbl3 th:first-child, #bpTbl4 th:first-child,
+  #bpTbl3 td:first-child, #bpTbl4 td:first-child { white-space: nowrap; }
+  #bpTbl3 th:not(:first-child), #bpTbl4 th:not(:first-child) { text-align: right; }
+  #bpTbl3 td.num, #bpTbl4 td.num { text-align: right; font-variant-numeric: tabular-nums; }
 
   table.hv-table { table-layout:fixed !important; width:100%; border-collapse:collapse; font-size:13px; }
   table.hv-table col.c-quan { width: 46%; }
@@ -1412,16 +1417,18 @@ function pickCBGCols(rows){
   const kv = find(k => normStr(k).includes("khu vuc"));
   const drv = find(k => normStr(k).includes("pickup") && normStr(k).includes("driver")) || find(k => normStr(k).includes("driver"));
   const maTX = find(k => normStr(k).includes("ma") && normStr(k).includes("tai"));
+  const quanGiao = find(k => normStr(k) === "quan giao");
   const order = find(k => normStr(k).includes("order") && normStr(k).includes("number"));
+  const seller = find(k => normStr(k) === "seller name");
   const dist = find(k => normStr(k) === "district");
   const ptime = find(k => normStr(k).includes("pickup") && normStr(k).includes("time"));
   if (!order) return null;
-  return { cot, kv, drv, maTX, order, dist, ptime };
+  return { cot, kv, drv, maTX, quanGiao, order, seller, dist, ptime };
 }
 function pickCBGClean(rows){
   const cols = pickCBGCols(rows);
   if (!cols) return { cols: null, heads: [], rows: [] };
-  const heads = [["cot","COT"],["kv","Khu Vực"],["drv","Pickup Driver"],["maTX","Mã Tài Xế"],["order","Order Number"],["dist","District"],["ptime","Pickup Time"]].filter(([k]) => cols[k]);
+  const heads = [["cot","COT"],["kv","Khu Vực"],["drv","Pickup Driver"],["maTX","Mã Tài Xế"],["order","Order Number"],["seller","Seller Name"],["dist","District"],["ptime","Pickup Time"]].filter(([k]) => cols[k]);
   const isErr = (v) => String(v ?? "").trim().startsWith("#");
   const clean = rows.filter(r => String(r[cols.order] ?? "").trim() !== "" && !heads.some(([k]) => isErr(r[cols[k]])));
   return { cols, heads, rows: clean };
@@ -1446,24 +1453,27 @@ function renderPickCBG(rows, q) {
   // heads + loc sach lay tu pickCBGClean (so dem chuan cho sidebar)
   const nq = normStr(q || "");
   let f = nq ? got.rows.filter(r => heads.some(([k]) => normStr(r[cols[k]] ?? "").includes(nq))) : got.rows;
-  // Bang tong hop theo rider (COT | Khu Vuc | Rider | Ma TX | Tong don)
+  // Bang tong hop theo rider (COT | Khu Vuc | Rider | Ma TX | Quan Giao | Tong don)
   const gMap = {};
+  const cleanCell = (v) => { const s = String(v ?? "").trim(); return s.startsWith("#") ? "" : s; };
   for (const r of f){
     const gCot = cols.cot ? String(r[cols.cot] ?? "").trim() : "";
     const gKv = cols.kv ? String(r[cols.kv] ?? "").trim() : "";
     const gDrv = cols.drv ? String(r[cols.drv] ?? "").trim() : "";
     const gMa = cols.maTX ? String(r[cols.maTX] ?? "").trim() : "";
+    const gQuan = cols.quanGiao ? cleanCell(r[cols.quanGiao]) : "";
     const gk = (gCot + "|" + gKv + "|" + gDrv.toUpperCase() + "|" + gMa).toUpperCase();
-    if (!gMap[gk]) gMap[gk] = { cot: gCot, kv: gKv, drv: gDrv || "(Trống)", ma: gMa, n: 0 };
+    if (!gMap[gk]) gMap[gk] = { cot: gCot, kv: gKv, drv: gDrv || "(Trống)", ma: gMa, quan: gQuan, n: 0 };
+    if (!gMap[gk].quan && gQuan) gMap[gk].quan = gQuan;
     gMap[gk].n++;
   }
   const gRows = Object.values(gMap).sort((a,b) => (a.kv||"").localeCompare(b.kv||"") || (a.cot||"").localeCompare(b.cot||"") || b.n - a.n || a.drv.localeCompare(b.drv));
   let sumHtml = `<div class="pivot-title kv3">Tổng hợp theo Rider <span>(${gRows.length} rider • ${f.length.toLocaleString("vi-VN")} đơn)</span></div>
-  <div style="overflow:auto;max-height:300px;margin-bottom:4px"><table class="pivot"><colgroup><col style="width:14%"><col style="width:16%"><col style="width:34%"><col style="width:20%"><col style="width:16%"></colgroup><thead><tr><th>COT</th><th>Khu Vực</th><th>Họ tên Rider</th><th>Mã Tài Xế</th><th style="text-align:right">Tổng số đơn</th></tr></thead><tbody>`;
+  <div style="overflow:auto;max-height:300px;margin-bottom:4px"><table class="pivot"><colgroup><col style="width:12%"><col style="width:14%"><col style="width:28%"><col style="width:18%"><col style="width:14%"><col style="width:14%"></colgroup><thead><tr><th>COT</th><th>Khu Vực</th><th>Họ tên Rider</th><th>Mã Tài Xế</th><th>Quận Giao</th><th style="text-align:right">Tổng số đơn</th></tr></thead><tbody>`;
   for (const s of gRows){
-    sumHtml += `<tr><td>${s.cot}</td><td>${s.kv}</td><td>${s.drv}</td><td>${s.ma}</td><td style="text-align:right"><b>${s.n.toLocaleString("vi-VN")}</b></td></tr>`;
+    sumHtml += `<tr><td>${s.cot}</td><td>${s.kv}</td><td>${s.drv}</td><td>${s.ma}</td><td>${s.quan}</td><td style="text-align:right"><b>${s.n.toLocaleString("vi-VN")}</b></td></tr>`;
   }
-  sumHtml += `<tr class="grand"><td colspan="4">TỔNG CỘNG</td><td style="text-align:right"><b>${f.length.toLocaleString("vi-VN")}</b></td></tr></tbody></table></div>`;
+  sumHtml += `<tr class="grand"><td colspan="5">TỔNG CỘNG</td><td style="text-align:right"><b>${f.length.toLocaleString("vi-VN")}</b></td></tr></tbody></table></div>`;
   // (loc search da chay o tren, truoc khi tong hop)
   const ps = Number(detailPage.pageSize) || 200;
   const tp = Math.max(1, Math.ceil(f.length / ps));
@@ -1829,15 +1839,21 @@ function bpCount(rows, quan, phuong, cot, colVals, q, p){
   }
   return m;
 }
-function bpTable(tblId, totId, rows, tag){
+function bpTable(tblId, totId, rows, tag, forceCols){
   const tbl = document.getElementById(tblId);
   const pc = parcelCols(rows);
   if (!tbl || !pc){ return 0; }
   const data = rows.filter(r=>String(r[pc.ma]??"").trim()!=="");
   if (!data.length){ tbl.innerHTML = `<tr><td>Không có dữ liệu.</td></tr>`; return 0; }
-  const colVals = [...new Set(data.map(r=>String(r[pc.cot]??"").trim()||"(Trống)"))].sort();
+  const ownCols = [...new Set(data.map(r=>String(r[pc.cot]??"").trim()||"(Trống)"))].sort();
+  // Dung chung bo cot COT cho ca 2 bang KV3/KV4 -> cac cot thang hang nhau giua 2 panel.
+  const colVals = (forceCols && forceCols.length) ? forceCols.slice() : ownCols;
   const quans = [...new Set(data.map(r=>String(r[pc.quan]??"").trim()||"(Trống)"))].sort();
-  let html = `<tr><th style="text-align:left">Quận / Phường</th>`+colVals.map(c=>`<th>${c}</th>`).join("")+`<th>Tổng</th></tr>`;
+  // Cot 1 (Quan/Phuong) chiem 46% de ten phuong / "Tong Quan ..." nam gon 1 dong; cac cot so chia deu phan con lai.
+  const numCount = colVals.length + 1;
+  const restW = ((100 - 46) / numCount).toFixed(2);
+  let html = `<colgroup><col style="width:46%">` + colVals.map(()=>`<col style="width:${restW}%">`).join("") + `<col style="width:${restW}%"></colgroup>`;
+  html += `<tr><th style="text-align:left">Quận / Phường</th>`+colVals.map(c=>`<th>${c}</th>`).join("")+`<th>Tổng</th></tr>`;
   const grand = {}; colVals.forEach(c=>grand[c]=0);
   for (const qn of quans){
     const closed = !!bpCollapsed[tag+"|"+qn];
@@ -1870,8 +1886,10 @@ function renderBacklogPivot(rows){
   wrap.style.display = "";
   const kv3 = [], kv4 = [];
   for (const r of rows){ (kvOf(r)==="KV3"?kv3:kv4).push(r); }
-  bpTable("bpTbl3", "bpTot3", kv3, "KV3");
-  bpTable("bpTbl4", "bpTot4", kv4, "KV4");
+  const pc = parcelCols(rows);
+  const allCot = pc ? [...new Set(rows.map(r=>String(r[pc.cot]??"").trim()||"(Trống)"))].sort() : [];
+  bpTable("bpTbl3", "bpTot3", kv3, "KV3", allCot);
+  bpTable("bpTbl4", "bpTot4", kv4, "KV4", allCot);
 }
 function exportDetail(){
   let rows = DATA[curDetail] || [];
