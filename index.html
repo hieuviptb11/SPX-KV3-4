@@ -1425,12 +1425,19 @@ function pickCBGCols(rows){
   if (!order) return null;
   return { cot, kv, drv, maTX, quanGiao, order, seller, dist, ptime };
 }
+// Hub chi quan ly Khu vuc 3 & 4: bo cac don cua khu vuc khac / chua xac dinh.
+function pickCBGInScope(r, cols){
+  if (!cols.kv) return true;
+  const v = normStr(r[cols.kv] ?? "").trim();
+  return v === "khu vuc 3" || v === "khu vuc 4" || v === "kv3" || v === "kv4";
+}
 function pickCBGClean(rows){
   const cols = pickCBGCols(rows);
   if (!cols) return { cols: null, heads: [], rows: [] };
   const heads = [["cot","COT"],["kv","Khu Vực"],["drv","Pickup Driver"],["maTX","Mã Tài Xế"],["order","Order Number"],["seller","Seller Name"],["dist","District"],["ptime","Pickup Time"]].filter(([k]) => cols[k]);
-  const isErr = (v) => String(v ?? "").trim().startsWith("#");
-  const clean = rows.filter(r => String(r[cols.order] ?? "").trim() !== "" && !heads.some(([k]) => isErr(r[cols[k]])));
+  // Chi bo dong khong co Order Number hoac khong thuoc Khu vuc 3/4.
+  // Cot tra cuu loi (#N/A) van giu dong, chi hien thi trong o.
+  const clean = rows.filter(r => String(r[cols.order] ?? "").trim() !== "" && pickCBGInScope(r, cols));
   return { cols, heads, rows: clean };
 }
 function pickCBGTotal(){
@@ -1457,10 +1464,10 @@ function renderPickCBG(rows, q) {
   const gMap = {};
   const cleanCell = (v) => { const s = String(v ?? "").trim(); return s.startsWith("#") ? "" : s; };
   for (const r of f){
-    const gCot = cols.cot ? String(r[cols.cot] ?? "").trim() : "";
-    const gKv = cols.kv ? String(r[cols.kv] ?? "").trim() : "";
-    const gDrv = cols.drv ? String(r[cols.drv] ?? "").trim() : "";
-    const gMa = cols.maTX ? String(r[cols.maTX] ?? "").trim() : "";
+    const gCot = cols.cot ? cleanCell(r[cols.cot]) : "";
+    const gKv = cols.kv ? cleanCell(r[cols.kv]) : "";
+    const gDrv = cols.drv ? cleanCell(r[cols.drv]) : "";
+    const gMa = cols.maTX ? cleanCell(r[cols.maTX]) : "";
     const gQuan = cols.quanGiao ? cleanCell(r[cols.quanGiao]) : "";
     const gk = (gCot + "|" + gKv + "|" + gDrv.toUpperCase() + "|" + gMa).toUpperCase();
     if (!gMap[gk]) gMap[gk] = { cot: gCot, kv: gKv, drv: gDrv || "(Trống)", ma: gMa, quan: gQuan, n: 0 };
@@ -1468,7 +1475,7 @@ function renderPickCBG(rows, q) {
     gMap[gk].n++;
   }
   const gRows = Object.values(gMap).sort((a,b) => (a.kv||"").localeCompare(b.kv||"") || (a.cot||"").localeCompare(b.cot||"") || b.n - a.n || a.drv.localeCompare(b.drv));
-  let sumHtml = `<div class="pivot-title kv3">Tổng hợp theo Rider <span>(${gRows.length} rider • ${f.length.toLocaleString("vi-VN")} đơn)</span></div>
+  let sumHtml = `<div class="pivot-title kv3">Tổng hợp theo Rider <span>(KV3/KV4 • ${gRows.length} rider • ${f.length.toLocaleString("vi-VN")} đơn)</span></div>
   <div style="overflow:auto;max-height:300px;margin-bottom:4px"><table class="pivot"><colgroup><col style="width:12%"><col style="width:14%"><col style="width:28%"><col style="width:18%"><col style="width:14%"><col style="width:14%"></colgroup><thead><tr><th>COT</th><th>Khu Vực</th><th>Họ tên Rider</th><th>Mã Tài Xế</th><th>Quận Giao</th><th style="text-align:right">Tổng số đơn</th></tr></thead><tbody>`;
   for (const s of gRows){
     sumHtml += `<tr><td>${s.cot}</td><td>${s.kv}</td><td>${s.drv}</td><td>${s.ma}</td><td>${s.quan}</td><td style="text-align:right"><b>${s.n.toLocaleString("vi-VN")}</b></td></tr>`;
@@ -1483,14 +1490,14 @@ function renderPickCBG(rows, q) {
   const page = f.slice(s0, s0 + ps);
   let html = "<thead><tr>" + heads.map(([,h]) => `<th>${h}</th>`).join("") + "</tr></thead><tbody>";
   for (const r of page) {
-    html += "<tr>" + heads.map(([k]) => `<td>${r[cols[k]] ?? ""}</td>`).join("") + "</tr>";
+    html += "<tr>" + heads.map(([k]) => `<td>${cleanCell(r[cols[k]])}</td>`).join("") + "</tr>";
   }
   html += "</tbody>";
   tbl.innerHTML = html;
   const bar = buildPager(f.length, f.length);
   document.getElementById("pagerTop").innerHTML = sumHtml + bar;
   document.getElementById("pagerBot").innerHTML = bar;
-  if (info) info.textContent = `Tổng ${f.length.toLocaleString("vi-VN")}/${rows.length.toLocaleString("vi-VN")} dòng — trang ${detailPage.page}/${tp}.`;
+  if (info) info.textContent = `Chỉ Khu vực 3 & 4 — Tổng ${f.length.toLocaleString("vi-VN")}/${rows.length.toLocaleString("vi-VN")} dòng — trang ${detailPage.page}/${tp}.`;
 }
 
 function renderDetail(){
